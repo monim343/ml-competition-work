@@ -1,0 +1,65 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Competition work — ROGII wellbore geology</title>
+<style>
+:root{--bg:#fbfaf7;--ink:#17140f;--muted:#5e574c;--rule:#e2ddd4;--accent:#a8541b}
+@media(prefers-color-scheme:dark){:root{--bg:#100e0c;--ink:#ede7de;--muted:#a79c8d;--rule:#2e2823;--accent:#e0904f}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.62 Charter,Georgia,serif;-webkit-font-smoothing:antialiased}
+#repobar{position:sticky;top:0;z-index:99;display:flex;justify-content:space-between;align-items:center;gap:1rem;
+ padding:.5rem 1rem;font:12px/1.4 ui-monospace,Menlo,monospace;background:#16201f;color:#c9d3d0;border-bottom:1px solid #0b100f}
+#repobar a{color:#7fd3c4;text-decoration:none;font-weight:600}#repobar a:hover{text-decoration:underline}#repobar span{opacity:.65}
+.w{max-width:44rem;margin:0 auto;padding:3.4rem 1.5rem 6rem}
+h1{font:650 1.9rem/1.15 system-ui,sans-serif;letter-spacing:-.02em;margin:0 0 .4rem}
+p.sub{color:var(--muted);margin:0 0 1.6rem}
+h2{font:650 .72rem/1 ui-monospace,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);
+   margin:2.6rem 0 .9rem;padding-bottom:.5rem;border-bottom:1px solid var(--rule)}
+a{color:inherit}
+ul{list-style:none;padding:0;margin:0}
+li{padding:.6rem 0;border-bottom:1px solid var(--rule)}
+li b{font-weight:650}
+li span{display:block;color:var(--muted);font-size:.92rem}
+table{border-collapse:collapse;width:100%;font:13px ui-monospace,Menlo,monospace;margin:.4rem 0 0}
+td,th{text-align:left;padding:.3rem .7rem .3rem 0;border-bottom:1px solid var(--rule)}
+th{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+footer{margin-top:3rem;color:var(--muted);font:.85rem ui-monospace,monospace;line-height:1.8}
+</style></head><body>
+<div id="repobar"><a href="../index.html">&#8592; all competitions</a><a href="https://github.com/monim343/ml-competition-work">source on GitHub</a></div>
+<div class="w">
+<h1>ROGII — Wellbore Geology Prediction</h1>
+<p class="sub">Predict where a horizontal well sits inside the rock layers, from a gamma-ray log and
+one vertical reference log. Sequence alignment under heavy ambiguity. Kaggle featured competition,
+solo entry, <b>65th of 6,125</b>.</p>
+
+<table>
+<tr><th>metric</th><th>pooled row RMSE, feet</th></tr>
+<tr><td>doing nothing</td><td>15.910</td></tr>
+<tr><td>this solution</td><td>7.341 private &middot; 5.888 public</td></tr>
+<tr><td>winner</td><td>5.639</td></tr>
+</table>
+
+<h2>Documents</h2>
+<ul>
+<li><a href="solution-reference.html"><b>The solution</b></a>
+<span>Thirteen components, the formula, the post-blend chain, and how to rebuild each piece —
+including the submission that scored better on private than the one selected.</span></li>
+</ul>
+
+<h2>Explainers</h2>
+<ul>
+<li><a href="explainers/beam-decoder-field-guide.html"><b>The segment-beam decoder</b></a>
+<span>How the beam search over straight segments works, from first principles. Includes an interactive sandbox.</span></li>
+<li><a href="explainers/nn-architecture-search.html"><b>Sequence networks</b></a>
+<span>What the three networks are, and an architecture search aimed at decorrelation rather than accuracy.</span></li>
+<li><a href="explainers/does-this-model-help.html"><b>Does this model help?</b></a>
+<span>The two-number test for whether a candidate earns a slot, and four ways it still misleads.</span></li>
+<li><a href="explainers/self-reference-investigation.html"><b>Self-reference investigation</b></a>
+<span>Whether a well's own log beats its reference log — a direction I closed and several medal solutions shipped.</span></li>
+</ul>
+
+<footer>
+These pages are rendered from the same sources as the Markdown in the repository.<br>
+Code, the submitted kernel, weights and validation scripts:
+<a href="https://github.com/monim343/ml-competition-work">github.com/monim343/ml-competition-work</a>
+</footer>
+</div></body></html>

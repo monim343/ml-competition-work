@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sequence networks for wellbore alignment</title>
+</head>
+<body>
+<div id="repobar"><a href="index.html">&#8592; all documents</a><a href="https://github.com/monim343/ml-competition-work">source on GitHub</a></div>
+<style>
+#repobar{position:sticky;top:0;z-index:99;display:flex;justify-content:space-between;align-items:center;
+ gap:1rem;padding:.5rem 1rem;font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;
+ background:#16201f;color:#c9d3d0;border-bottom:1px solid #0b100f}
+#repobar a{color:#7fd3c4;text-decoration:none;font-weight:600}
+#repobar a:hover{text-decoration:underline}
+#repobar span{opacity:.65}
+@media print{#repobar{display:none}}
+</style>
+<title>Sequence networks for wellbore alignment</title>
+<style>
+:root{
+  --serif:'Iowan Old Style',Charter,'Bitstream Charter','Sitka Text','Source Serif 4',Cambria,Georgia,serif;
+  --mono:ui-monospace,'SF Mono',SFMono-Regular,'Cascadia Mono','JetBrains Mono',Menlo,Consolas,monospace;
+  --paper:#F2F3F0;--panel:#E8EBE6;--panel2:#DDE2DC;--ink:#16201F;--soft:#3C4B48;
+  --muted:#66736E;--rule:#D2D8D1;--accent:#0F6B63;--accdim:#0F6B6318;
+  --oxide:#A24C18;--oxdim:#A24C1815;--good:#1F6B4A;--crit:#8C2F2F;
+}
+@media (prefers-color-scheme:dark){:root{
+  --paper:#0F1413;--panel:#171E1D;--panel2:#1E2725;--ink:#E2E7E4;--soft:#B6C0BC;
+  --muted:#8B9791;--rule:#26302E;--accent:#58B8AA;--accdim:#58B8AA1F;
+  --oxide:#D98A52;--oxdim:#D98A521A;--good:#5FBFA3;--crit:#D97070;}}
+:root[data-theme="light"]{--paper:#F2F3F0;--panel:#E8EBE6;--panel2:#DDE2DC;--ink:#16201F;
+  --soft:#3C4B48;--muted:#66736E;--rule:#D2D8D1;--accent:#0F6B63;--accdim:#0F6B6318;
+  --oxide:#A24C18;--oxdim:#A24C1815;--good:#1F6B4A;--crit:#8C2F2F;}
+:root[data-theme="dark"]{--paper:#0F1413;--panel:#171E1D;--panel2:#1E2725;--ink:#E2E7E4;
+  --soft:#B6C0BC;--muted:#8B9791;--rule:#26302E;--accent:#58B8AA;--accdim:#58B8AA1F;
+  --oxide:#D98A52;--oxdim:#D98A521A;--good:#5FBFA3;--crit:#D97070;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--serif);
+  font-size:17px;line-height:1.62;-webkit-font-smoothing:antialiased}
+.shell{max-width:1000px;margin:0 auto;padding:52px 24px 80px}
+.eyebrow{font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent);margin:0 0 1rem}
+h1{font-size:clamp(2rem,5vw,2.9rem);line-height:1.08;letter-spacing:-.018em;font-weight:600;
+  margin:0 0 .8rem;max-width:20ch;text-wrap:balance}
+.stand{font-size:1.12rem;color:var(--soft);max-width:64ch;margin:0 0 1.8rem}
+.meta{font-family:var(--mono);font-size:.72rem;line-height:1.85;color:var(--muted);
+  border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:.85rem 0;
+  margin:0 0 2.6rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:.15rem 2rem}
+.meta b{color:var(--soft);font-weight:600}
+nav.toc{display:flex;flex-wrap:wrap;gap:.4rem;margin:0 0 2.6rem}
+nav.toc a{font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;text-transform:uppercase;
+  padding:.4rem .7rem;border:1px solid var(--rule);border-radius:2px;color:var(--soft);
+  text-decoration:none;background:var(--panel)}
+nav.toc a:hover{color:var(--accent);border-color:var(--accent)}
+section{border-top:1px solid var(--rule);padding-top:2rem;margin-top:2.6rem;scroll-margin-top:1rem}
+section:first-of-type{border-top:0;margin-top:0;padding-top:0}
+h2{font-size:1.55rem;letter-spacing:-.012em;font-weight:600;margin:0 0 .5rem;text-wrap:balance}
+h3{font-family:var(--mono);font-size:.7rem;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--muted);font-weight:600;margin:2rem 0 .7rem}
+p{max-width:66ch;margin:0 0 1rem}
+code,.m{font-family:var(--mono);font-size:.86em}
+code{background:var(--panel);padding:.08em .32em;border-radius:2px}
+.scroller{overflow-x:auto;margin:0 0 1.3rem}
+table{border-collapse:collapse;width:100%;font-family:var(--mono);font-size:.8rem;
+  font-variant-numeric:tabular-nums}
+th,td{padding:.42rem .8rem .42rem 0;text-align:left;border-bottom:1px solid var(--rule);
+  white-space:nowrap;vertical-align:top}
+th{font-size:.63rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+  font-weight:600;border-bottom:1px solid var(--soft)}
+td.n,th.n{text-align:right;padding-right:1.1rem}
+td.wrap{white-space:normal;min-width:22ch}
+tr.hi td{background:var(--accdim)}
+.ok{color:var(--good)}.bad{color:var(--oxide)}.crit{color:var(--crit)}
+.formula{background:var(--panel);border:1px solid var(--rule);border-radius:3px;
+  padding:1.2rem 1.3rem;margin:0 0 1.2rem;overflow-x:auto}
+.formula pre{font-family:var(--mono);font-size:.8rem;line-height:1.9;margin:0;color:var(--soft)}
+.formula .k{color:var(--accent);font-weight:600}.formula .c{color:var(--oxide)}
+.formula .cm{color:var(--muted)}
+.call{border-left:2px solid var(--accent);background:var(--accdim);padding:.85rem 1.1rem;
+  margin:0 0 1.3rem;border-radius:0 2px 2px 0;max-width:70ch}
+.call.warn{border-left-color:var(--oxide);background:var(--oxdim)}
+.call p{margin:0 0 .5rem}.call p:last-child{margin:0}
+.lab{font-family:var(--mono);font-size:.63rem;letter-spacing:.13em;text-transform:uppercase;
+  font-weight:600;color:var(--accent);display:block;margin-bottom:.35rem}
+.call.warn .lab{color:var(--oxide)}
+.tnote{font-family:var(--mono);font-size:.7rem;color:var(--muted);margin:-.7rem 0 1.4rem;
+  line-height:1.65;max-width:76ch}
+ol,ul{max-width:66ch;padding-left:1.3rem;margin:0 0 1rem}
+li{margin-bottom:.42rem}
+li::marker{color:var(--muted);font-family:var(--mono);font-size:.85em}
+.pill{display:inline-block;font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;
+  text-transform:uppercase;padding:.1rem .4rem;border-radius:2px;border:1px solid currentColor}
+.pill.own{color:var(--good)}.pill.tp{color:var(--oxide)}.pill.vest{color:var(--muted)}
+.pill.tbc{color:var(--crit)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<div class="shell">
+<h1>Sequence networks for wellbore alignment</h1>
+<p class="eyebrow"><i>Architecture search · what shipped, what was refuted, and the one rule that survived</i></p>
+<p>Three of the models in the final solution are sequence networks: two inside the blend at weights .1505 and .1233, and a third mixed in after it at 0.06. This page describes what they are, then records a search programme — 20 experiments, roughly 40 training runs — whose stated goal was not accuracy at all. It was <b>decorrelation</b>: finding a network whose errors differ from the rest of the blend's. Most of what I tried did not work, and the reasons are the useful part.</p>
+<p>The companion page <a href="does-this-model-help.html">Does this model help?</a> derives the rule this whole search was aimed at. In short, a candidate earns weight when <code>RMSE_candidate × ρ_candidate &lt; RMSE_blend</code> — so a network can be <i>worse</i> standalone and still be the most valuable thing to add, provided it is wrong in a different way.</p>
+<section id="what-the-network-has-to-output">
+<h2 id="what-the-network-has-to-output">What the network has to output</h2>
+<p>The obvious formulation — regress the target depth directly — is the wrong one here. Depths are around 11,000 ft and the quantity of interest is a drift of a few feet from a known anchor, so a direct regression spends all its capacity on a constant it is already given.</p>
+<p>Every network here instead predicts a <b>rate of change per row</b>. A <code>tanh</code> holds that rate inside ±0.08, it is smoothed over 21 rows, integrated along measured depth from the anchor's known value, and a second <code>tanh</code> holds the accumulated offset inside ±120 ft. Two consequences follow, and both matter more than any architecture choice below:</p>
+<ul><li>The output is a drift, on the same scale as every other model in the blend, so members can be averaged without rescaling. The two saturating bounds mean a confident network cannot run away: the worst it can do is saturate at 120 ft.</li><li>The final layer is <b>initialised to zero</b>. At step 0 the network predicts a rate of exactly zero, which integrates to "hold the anchor flat" — the 15.910 ft no-information baseline. Training starts from the sensible default and learns deviations from it, rather than learning the datum from scratch.</li></ul>
+</section>
+<section id="the-architecture-that-shipped">
+<h2 id="the-architecture-that-shipped">The architecture that shipped</h2>
+<p>Two branches over two different sequences, fused by attention.</p>
+<div class="formula"><pre>lateral log     33 features per row
+                Conv1D(64, width 7)
+                6 residual blocks, dilation 1 2 4 8 16 32        -&gt; hx
+
+reference log   256 tokens x 4 channels, plus an 8-dim geology embedding
+                Conv1D(64, width 5)
+                3 residual blocks, dilation 1 2 4                -&gt; tx
+
+fusion          attn  = cross-attention(query hx, keys/values tx), 4 heads
+                fused = concat[ hx , LayerNorm(hx + 0.10 * attn) ]
+
+head            Dense(96, gelu) -&gt; dropout -&gt; Dense(1, zero-initialised)
+                rate   = 0.08 * tanh(.)         then averaged over 21 rows
+                offset = 120 * tanh( cumsum(rate * dmd) / 120 )
+                TVT    = anchor + offset</pre></div>
+<p>The dilation ladder is the point of the design. Stacking dilations 1 through 32 with kernel 5 gives the lateral branch a receptive field of a few thousand rows — thousands of feet of hole — while staying a convolution, so it costs a fraction of what attention over the same span would. The reference log gets a shallower ladder because it is a shorter, tokenised sequence: 256 tokens covering ±160 ft around the anchor.</p>
+<p>Two details are worth flagging because they are deliberate and unusual:</p>
+<ul><li><b>The reference log never enters the head directly.</b> What gets concatenated is the lateral stream beside an attention-corrected copy of <i>itself</i> — <code>concat[hx, LayerNorm(hx + 0.10·attn)]</code> — and the attention output arrives at one-tenth strength. So the reference log can only nudge the lateral representation; it cannot overrule it. That is the opposite of the usual two-tower design, where both towers meet as equals, and it is why the net degrades gracefully on wells whose reference log is a poor match.</li><li><b>Geology is an embedding</b>, not a one-hot. Seven formation labels map to an 8-dimensional vector learned jointly, concatenated onto the reference tokens.</li></ul>
+<p>Training is deliberately modest: 24 epochs, patience 7, learning rate 1.2e−4, weight decay 1e−4, gradient accumulation over 8 steps to get a usable batch size out of variable-length wells. Five folds, grouped by well.</p>
+<h3>The cost-volume variant</h3>
+<p>The second network in the blend replaces part of the input with an explicitly constructed <b>cost volume</b>: for each row, the gamma-ray residual against the reference log evaluated at seven candidate offsets from the anchor, scaled by a robust deviation estimate and clipped to ±8.</p>
+<p>The measured properties of that volume are what make it interesting:</p>
+<ul><li>Its <b>pointwise argmin is weak</b> — following it row by row identifies the right offset 19.6% of the time against 14.3% for random, and doing so is worse than not moving at all.</li><li>The ±40 ft span brackets the true offset on <b>99.3%</b> of rows.</li></ul>
+<p>So the volume is not a predictor; it is evidence to be <i>aggregated</i>. Seven taps across a ±126-row receptive field is over 2,000 measurements feeding each output. This is the same reasoning stereo depth networks use — run convolutions over a cost volume rather than taking its minimum — and it is why the variant earns its own slot at .1233 rather than duplicating the first network.</p>
+</section>
+<section id="what-the-search-was-actually-looking-for">
+<h2 id="what-the-search-was-actually-looking-for">What the search was actually looking for</h2>
+<p>The banked result of the whole programme was a third network, trained with heavier dropout:</p>
+<div class="scroller"><table>
+<thead><tr><th>model</th><th>RMSE alone</th><th>ρ with the blend</th><th>marginal value</th></tr></thead><tbody>
+<tr><td class="wrap"><b>the dropout-regularised net (banked)</b></td><td>9.495</td><td><b>0.600</b></td><td><b>−0.0695</b></td></tr>
+<tr><td>gradient-boosted trees</td><td>7.896</td><td>0.838</td><td>−0.0057</td></tr>
+<tr><td>dip-rate dynamic program</td><td>13.336</td><td>0.473</td><td>−0.0057</td></tr>
+<tr><td>cost-volume net</td><td>9.587</td><td>0.685</td><td>−0.0036</td></tr>
+<tr><td>whole-well net</td><td>10.012</td><td>0.681</td><td>+0.0000</td></tr>
+</tbody></table></div>
+<p>Five-fold out-of-fold by well, zero fold overlap, 100% row coverage over all 3,783,989 rows. Its marginal value is <b>twelve times</b> the best incumbent's, and it dominates the whole-well net on both axes at once — accuracy and correlation — which makes it a slot <i>replacement</i> candidate rather than an addition.</p>
+<p><b>What it actually is, though, is not the most accurate member — it is the most reliable one.</b> Its median per-well RMSE is 6.48, second worst in the blend. But it has the <b>lowest maximum of any member</b> at 35.1 ft, no wells beyond 40 ft, and the smallest share of total error coming from its tail. The beam searches are its mirror image: the best medians in the blend (4.46 and 4.50) and the worst tails (65 ft). The network earns its weight by being steady exactly where the high-variance members blow up.</p>
+<p>It shipped at <b>0.06</b>, mixed in after the blend rather than inside it — a weight at which it damages <b>zero</b> wells by more than 2 ft while keeping 73% of the available gain. The reason it sits outside the blend is structural: six of the thirteen members are re-decodes computed <i>from</i> the blend, so changing the blend changes them too. Injecting the third network afterwards leaves all six regenerating identically and keeps the contribution separately attributable.</p>
+</section>
+<section id="the-rule-that-survived-three-narrowings">
+<h2 id="the-rule-that-survived-three-narrowings">The rule that survived three narrowings</h2>
+<p>The programme's headline claim started broad and was cut down twice by measurements run specifically to break it.</p>
+<div class="scroller"><table>
+<thead><tr><th>stated at</th><th>claim</th><th>what killed it</th></tr></thead><tbody>
+<tr><td>first</td><td class="wrap">regularisation lowers correlation with the blend</td><td class="wrap">weight decay and input noise — no effect</td></tr>
+<tr><td>second</td><td>dropout lowers it</td><td>stochastic depth alone — no effect</td></tr>
+<tr><td>final</td><td class="wrap"><b>dropout lowers correlation only when the model over-fits, in proportion to the over-fit</b></td><td>—</td></tr>
+</tbody></table></div>
+<p>The decisive test applied dropout 0.32 to the production architecture rather than to my experimental one. Correlation moved only 0.622 → 0.585, it cost 0.59 ft of accuracy, and marginal value was left <i>unchanged</i>. My experimental harness had a 4.8× train/validation gap; the production networks were already regularised, carrying dropout of 0.08 and 0.12. <b>Dropout was repairing my model, not improving a general one.</b></p>
+<p>That is a narrower and less satisfying claim than the one I started with, and it is the one the evidence supports.</p>
+<h3>The half that survived intact</h3>
+<p><b>Averaging raises correlation</b> — four times out of four, across two unrelated model families: beam cost-weight averaging, beam seed averaging, boundary augmentation, and network seed ensembling. Averaging strips the idiosyncratic part of the error and leaves the shared systematic part, which is precisely the part that correlates with the blend.</p>
+<p>This gives a practical fork that is easy to get backwards:</p>
+<ul><li>Building a <b>standalone model</b>? Ensemble it and augment it. Both help.</li><li>Building a <b>blend member</b>? Do neither. A more accurate, more correlated member can be worth <i>less</i> at equal weight.</li></ul>
+<p>It was confirmed on the leaderboard, not just in cross-validation: averaging seeds of one network scored 5.933 against 5.918 for the single seed.</p>
+</section>
+<section id="everything-that-was-refuted">
+<h2 id="everything-that-was-refuted">Everything that was refuted</h2>
+<ul><li><b>The premise of the whole plan.</b> The idea was to move correlation by changing what the network <i>outputs</i> — a multi-modal head predicting several hypotheses. Correlation 0.529 against the rate head's 0.545, for +2.8 ft of accuracy. Six pilot runs to establish.</li><li><b>Attention over the lateral</b>, including a variant made 256× cheaper. Both were ~1 ft worse and more correlated, and the weight search gave them exactly zero. They were not under-trained — they plateaued by epoch 8. The old "too slow to try" verdict became "no benefit even when fast".</li><li><b>Recurrence.</b> A bidirectional GRU on stride-16 tokens scored 10.18 against the convolutional control's 9.80, at identical correlation.</li><li><b>Penalising correlation directly.</b> This is the only thing that ever moved correlation deliberately — 0.620 → 0.539 — but accuracy collapsed from 9.9 to 15.4 ft and the marginal value went to exactly 0.000. Decorrelation bought at the cost of accuracy is worth nothing, which is the two-number rule stating the obvious in the other direction.</li><li><b>More dropout.</b> The correlation trend on a single fold was real; the gain trend was not. Dropout 0.55 gave −0.0510 and 0.32-with-stochastic-depth gave −0.0435, both worse than 0.10's −0.0695. The optimum sits near 0.10, essentially where the production nets already were.</li><li><b>Smaller things:</b> 21 dip channels that had been discarded earlier (+0.85 ft), weight averaging across epochs (+0.50 ft), and ensembling network variants with each other (they correlate 0.671–0.824, and the second member earns weight 0.023).</li><li><b>Post-hoc regularisation of the non-network members.</b> Shrinking a member toward zero is exactly a no-op, because a weighted blend is scale-invariant per member — the weight search already owns that freedom. Clipping is worse than a no-op: it <i>raises</i> correlation, because the tail is where a member differs from the others, and difference is the thing the blend is paying for.</li></ul>
+</section>
+<section id="method-lessons-with-numbers">
+<h2 id="method-lessons-with-numbers">Method lessons, with numbers</h2>
+<p><b>Single folds lied three times, in the same direction.</b> Fold-0 gain overstated the five-fold truth by <b>11×</b> (−0.2785 against −0.0255), then <b>5.6×</b> (−0.2426 against −0.0435), then about 1.9× (−0.0968 against −0.0510). Correlation, by contrast, replicated well every time (0.364 → 0.386; 0.465 → 0.505). In this setup ρ is the stable single-fold measurement and gain is not — which makes ρ the right thing to screen on cheaply, and gain something you must pay five folds for.</p>
+<p><b>Low correlation is meaningless at uncompetitive accuracy.</b> The first pilot reported ρ of 0.40–0.47 across every head and read as confirmation of the plan. It was shrinkage: a model near anchor-hold has error ≈ −truth, which correlates with nothing. A degeneracy check is the only reason it was not written up as a success.</p>
+<p><b>Run-to-run noise is larger than most of the effects.</b> Same configuration, different seed: ~0.17 ft of RMSE, and a 7.6× spread in marginal value across three identical configurations (−0.0060 to −0.0457).</p>
+<p><b>Six pilots failed before one valid measurement.</b> Every one of them failed by re-deriving something the project already had — the features, then the data volume, then the loss and the optimiser. Importing the existing sequence loss verbatim fixed it in a single run. The lesson is unglamorous and cost the most time of anything on this page: when a new experiment underperforms a known baseline by a wide margin, suspect the harness before the hypothesis.</p>
+<p><i>Programme closed. 20 experiments, ~40 training runs, 1 banked member, 1 refuted premise, and 10 falsified sub-claims — 6 of them my own, including this page's central rule, which had to be narrowed three times before it was true.</i></p>
+</section>
+</div>
+</body>
+</html>

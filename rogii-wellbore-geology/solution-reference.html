@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ROGII solution reference</title>
+</head>
+<body>
+<div id="repobar"><a href="index.html">&#8592; all documents</a><a href="https://github.com/monim343/ml-competition-work">source on GitHub</a></div>
+<style>
+#repobar{position:sticky;top:0;z-index:99;display:flex;justify-content:space-between;align-items:center;
+ gap:1rem;padding:.5rem 1rem;font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;
+ background:#16201f;color:#c9d3d0;border-bottom:1px solid #0b100f}
+#repobar a{color:#7fd3c4;text-decoration:none;font-weight:600}
+#repobar a:hover{text-decoration:underline}
+#repobar span{opacity:.65}
+@media print{#repobar{display:none}}
+</style>
+<title>ROGII solution reference</title>
+<style>
+:root{
+  --serif:'Iowan Old Style',Charter,'Bitstream Charter','Sitka Text','Source Serif 4',Cambria,Georgia,serif;
+  --mono:ui-monospace,'SF Mono',SFMono-Regular,'Cascadia Mono','JetBrains Mono',Menlo,Consolas,monospace;
+  --paper:#F2F3F0;--panel:#E8EBE6;--panel2:#DDE2DC;--ink:#16201F;--soft:#3C4B48;
+  --muted:#66736E;--rule:#D2D8D1;--accent:#0F6B63;--accdim:#0F6B6318;
+  --oxide:#A24C18;--oxdim:#A24C1815;--good:#1F6B4A;--crit:#8C2F2F;
+}
+@media (prefers-color-scheme:dark){:root{
+  --paper:#0F1413;--panel:#171E1D;--panel2:#1E2725;--ink:#E2E7E4;--soft:#B6C0BC;
+  --muted:#8B9791;--rule:#26302E;--accent:#58B8AA;--accdim:#58B8AA1F;
+  --oxide:#D98A52;--oxdim:#D98A521A;--good:#5FBFA3;--crit:#D97070;}}
+:root[data-theme="light"]{--paper:#F2F3F0;--panel:#E8EBE6;--panel2:#DDE2DC;--ink:#16201F;
+  --soft:#3C4B48;--muted:#66736E;--rule:#D2D8D1;--accent:#0F6B63;--accdim:#0F6B6318;
+  --oxide:#A24C18;--oxdim:#A24C1815;--good:#1F6B4A;--crit:#8C2F2F;}
+:root[data-theme="dark"]{--paper:#0F1413;--panel:#171E1D;--panel2:#1E2725;--ink:#E2E7E4;
+  --soft:#B6C0BC;--muted:#8B9791;--rule:#26302E;--accent:#58B8AA;--accdim:#58B8AA1F;
+  --oxide:#D98A52;--oxdim:#D98A521A;--good:#5FBFA3;--crit:#D97070;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--serif);
+  font-size:17px;line-height:1.62;-webkit-font-smoothing:antialiased}
+.shell{max-width:1000px;margin:0 auto;padding:52px 24px 80px}
+.eyebrow{font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent);margin:0 0 1rem}
+h1{font-size:clamp(2rem,5vw,2.9rem);line-height:1.08;letter-spacing:-.018em;font-weight:600;
+  margin:0 0 .8rem;max-width:20ch;text-wrap:balance}
+.stand{font-size:1.12rem;color:var(--soft);max-width:64ch;margin:0 0 1.8rem}
+.meta{font-family:var(--mono);font-size:.72rem;line-height:1.85;color:var(--muted);
+  border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:.85rem 0;
+  margin:0 0 2.6rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:.15rem 2rem}
+.meta b{color:var(--soft);font-weight:600}
+nav.toc{display:flex;flex-wrap:wrap;gap:.4rem;margin:0 0 2.6rem}
+nav.toc a{font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;text-transform:uppercase;
+  padding:.4rem .7rem;border:1px solid var(--rule);border-radius:2px;color:var(--soft);
+  text-decoration:none;background:var(--panel)}
+nav.toc a:hover{color:var(--accent);border-color:var(--accent)}
+section{border-top:1px solid var(--rule);padding-top:2rem;margin-top:2.6rem;scroll-margin-top:1rem}
+section:first-of-type{border-top:0;margin-top:0;padding-top:0}
+h2{font-size:1.55rem;letter-spacing:-.012em;font-weight:600;margin:0 0 .5rem;text-wrap:balance}
+h3{font-family:var(--mono);font-size:.7rem;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--muted);font-weight:600;margin:2rem 0 .7rem}
+p{max-width:66ch;margin:0 0 1rem}
+code,.m{font-family:var(--mono);font-size:.86em}
+code{background:var(--panel);padding:.08em .32em;border-radius:2px}
+.scroller{overflow-x:auto;margin:0 0 1.3rem}
+table{border-collapse:collapse;width:100%;font-family:var(--mono);font-size:.8rem;
+  font-variant-numeric:tabular-nums}
+th,td{padding:.42rem .8rem .42rem 0;text-align:left;border-bottom:1px solid var(--rule);
+  white-space:nowrap;vertical-align:top}
+th{font-size:.63rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+  font-weight:600;border-bottom:1px solid var(--soft)}
+td.n,th.n{text-align:right;padding-right:1.1rem}
+td.wrap{white-space:normal;min-width:22ch}
+tr.hi td{background:var(--accdim)}
+.ok{color:var(--good)}.bad{color:var(--oxide)}.crit{color:var(--crit)}
+.formula{background:var(--panel);border:1px solid var(--rule);border-radius:3px;
+  padding:1.2rem 1.3rem;margin:0 0 1.2rem;overflow-x:auto}
+.formula pre{font-family:var(--mono);font-size:.8rem;line-height:1.9;margin:0;color:var(--soft)}
+.formula .k{color:var(--accent);font-weight:600}.formula .c{color:var(--oxide)}
+.formula .cm{color:var(--muted)}
+.call{border-left:2px solid var(--accent);background:var(--accdim);padding:.85rem 1.1rem;
+  margin:0 0 1.3rem;border-radius:0 2px 2px 0;max-width:70ch}
+.call.warn{border-left-color:var(--oxide);background:var(--oxdim)}
+.call p{margin:0 0 .5rem}.call p:last-child{margin:0}
+.lab{font-family:var(--mono);font-size:.63rem;letter-spacing:.13em;text-transform:uppercase;
+  font-weight:600;color:var(--accent);display:block;margin-bottom:.35rem}
+.call.warn .lab{color:var(--oxide)}
+.tnote{font-family:var(--mono);font-size:.7rem;color:var(--muted);margin:-.7rem 0 1.4rem;
+  line-height:1.65;max-width:76ch}
+ol,ul{max-width:66ch;padding-left:1.3rem;margin:0 0 1rem}
+li{margin-bottom:.42rem}
+li::marker{color:var(--muted);font-family:var(--mono);font-size:.85em}
+.pill{display:inline-block;font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;
+  text-transform:uppercase;padding:.1rem .4rem;border-radius:2px;border:1px solid currentColor}
+.pill.own{color:var(--good)}.pill.tp{color:var(--oxide)}.pill.vest{color:var(--muted)}
+.pill.tbc{color:var(--crit)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<div class="shell">
+<h1>The solution, as it stands</h1>
+<p class="eyebrow"><i>ROGII Wellbore Geology Prediction · solution reference</i></p>
+<p>Thirteen models combined by frozen convex weights, then an amplitude correction and a same-well overlay. This page states what the pipeline <b>is</b>, what produces each piece, and how to rebuild each one from the competition data alone.</p>
+<div class="meta">
+<p><b>Final rank</b> <b>65th / 6,125 · silver</b></p>
+<p><b>Selected</b> <b>public 5.888 / private 7.341</b></p>
+<p><b>Training data</b> <b>773 wells · 3,783,989 scored rows</b></p>
+<p><b>Metric</b> <b>pooled row RMSE, feet, lower better</b></p>
+<p><b>Closed</b> <b>2026-08-05 · this page is the final record</b></p>
+</div>
+<p><a href="#what-shipped&mdash;and-what-should-have">What shipped</a> · <a href="#the-formula">Formula</a> · <a href="#the-thirteen-models">The thirteen models</a> · <a href="#rebuilding-every-piece-from-scratch">Rebuild from scratch</a> · <a href="#where-each-piece-lives-in-the-code">Code</a> · <a href="#how-it-finished">How it finished</a></p>
+<div class="call">
+<span class="lab">A note on names.</span>
+<p>This page describes each component by what it <i>does</i>. The code uses short internal names, and the <a href="#where-each-piece-lives-in-the-code">mapping table</a> at the end connects the two, so nothing here is unfindable in the source.</p>
+</div>
+<section id="the-problem-in-one-paragraph">
+<h2 id="the-problem-in-one-paragraph">The problem, in one paragraph</h2>
+<p>Each well gives you a known prefix — roughly the first 1,500 rows, already interpreted — and a hidden tail to predict. The target is <b>true vertical thickness</b>: where the drill bit sits inside the rock layers. You also get one vertical <b>reference log</b>, a gamma-ray trace through the same rock column, which acts as a barcode. The horizontal well reads that same barcode, stretched and shifted, as it crosses layers. Predicting the target means finding the depth path that best explains the observed gamma ray, given the reference.</p>
+<p>Everything below either searches that space or repairs the answer. All thirteen models predict <b>drift from the last known depth</b>, never an absolute depth, so they all sit on one scale. Holding that last depth flat scores 15.910 ft, which is what "no information" looks like here.</p>
+</section>
+<section id="what-shipped-and-what-should-have">
+<h2 id="what-shipped-and-what-should-have">What shipped — and what should have</h2>
+<p>The competition is closed. This table is every construct that was scored, with the private column that was hidden while the decisions were being made. The rows are ordered by private, which is the only ordering that ever mattered.</p>
+<div class="scroller"><table>
+<thead><tr><th>construct</th><th>what it adds over the base</th><th>nested CV</th><th>public</th><th>private</th></tr></thead><tbody>
+<tr><td><b>the hedge</b></td><td class="wrap">decode twice — once stock, once with an alternative aligner — and average the two paths only where they disagree by more than 10 ft RMS</td><td>6.6195</td><td>6.146</td><td><b>7.280</b></td></tr>
+<tr><td>the uncapped swap</td><td class="wrap">replace the aligner outright; the pure maximum-cross-validation construct</td><td>6.4920</td><td>6.428</td><td>7.292</td></tr>
+<tr><td><b>the selection</b></td><td class="wrap">+ a third sequence net at 0.06, the disagreement amplitude map, and the aligner delta clipped to ±6 ft</td><td>~6.61</td><td><b>5.888</b></td><td>7.341</td></tr>
+<tr><td>wider amplitude cap</td><td class="wrap">the same, with the multiplier free to range [0.90, 1.10]</td><td>—</td><td>5.932</td><td>7.365</td></tr>
+<tr><td>three-resolution map</td><td class="wrap">the amplitude map averaged over three bin widths — the second slot</td><td>—</td><td>5.897</td><td>7.379</td></tr>
+<tr><td>the base ensemble</td><td class="wrap">thirteen models, the global gain, the smoother</td><td>6.7584</td><td>5.930</td><td>7.474</td></tr>
+<tr><td>an earlier corrector</td><td class="wrap">one re-decode reading a 5-row averaged gamma ray</td><td>6.8273</td><td>5.922</td><td>7.432</td></tr>
+</tbody></table></div>
+<div class="call warn">
+<span class="lab">An earlier version of this page drew the opposite conclusion, and was wrong</span>
+<p>Before the private scores existed, this page observed that the cross-validation ladder ran almost exactly opposite to the public board, and concluded: <i>"nested cross-validation is therefore not a selection instrument on this competition."</i> It recommended the two best public constructs.</p>
+<p><b>The private board reversed that.</b> The two best private submissions, the hedge (7.280) and the uncapped swap (7.292), are the two <i>worst</i> public ones in this table and the two <i>best</i> on nested cross-validation. The inversion was real, but it was a property of the small public sample, not of the hidden wells. Cross-validation was the better guide to private the whole time; the board was the misleading instrument.</p>
+</div>
+<div class="call">
+<span class="lab">What the best submission actually was</span>
+<p>It is not a stronger model. It is a <b>hedge</b>: run the beam decoder twice per well, once as standard and once with an alternative aligner, and average the two paths only where they disagree by more than 10 ft RMS — otherwise keep the first. The rationale recorded at the time still holds: decoder disagreement predicts that a well is <i>hard</i> (ρ = 0.55) but not which decode is <i>right</i> (51/49). So averaging bounds the damage where choosing cannot.</p>
+<p>Its gates were sound — cross-validation 6.8035 → 6.6195 winning 96% of folds, per-well change P5 −1.15 / P95 +0.23, three wells damaged beyond 2 ft and none beyond 5. It was still filed as <i>"PROBE ONLY … never a slot pick"</i> and never considered, because 6.146 against a 5.944 base made it unselectable on the board. It went on to beat all 47 submissions on private.</p>
+<p>The same principle — use disagreement between decoders, and hedge rather than bet on it — is what the shipped amplitude map does at row level. Reading the published solutions afterwards, other teams arrived at closely related ideas; it appears to be one of the natural answers to this problem rather than anything unique to this entry.</p>
+</div>
+</section>
+<section id="the-formula">
+<h2 id="the-formula">The formula</h2>
+<p>The kernel computes the blend in stages, but for the prediction the staging carries no information: it collapses exactly into the flat sum below. The stages exist only because two intermediate results are consumed by later models as <i>guides</i>.</p>
+<div class="formula"><pre>prediction = overlay(
+   anchor + 1.12 · [ ( .2589 · gradient-boosted trees, 186 engineered features
+                     + .1505 · dilated CNN over the whole well
+                     + .1479 · beam search, gamma ray against the reference log
+                     + .1233 · dilated CNN with cross-attention over a cost volume
+                     + .0863 · particle filter, learned rankers pick the path
+                     + .0400 · guided re-decode — pointwise cost, smoothed gamma ray
+                     + .0395 · guided re-decode — pointwise cost, averaged gamma ray
+                     + .0395 · beam search with a trend override
+                     + .0316 · guided re-decode — pointwise cost, later guide
+                     + .0237 · guided re-decode — windowed amplitude cost
+                     + .0237 · guided re-decode — windowed shape + amplitude
+                     + .0192 · dynamic program in dip-rate space
+                     + .0158 · guided re-decode — heavy-tailed cost, looser pull
+                     ) − anchor ]
+ )                                              // printed weights sum to 0.9999 — see the note</pre></div>
+<div class="call warn">
+<span class="lab">These printed weights are for reading, not for pasting</span>
+<p>At four decimals they sum to 0.9999, not 1. Depth is ~11,546 ft and the gain is 1.12, so a 1e−4 shortfall is <b>1.29 ft of bias on every row</b>. Anyone flattening the chain in code must carry the <i>products</i> of the stage constants, not these rounded values. The kernel is safe by construction because every stage's residual weight is derived as <code>1 − sum(others)</code>.</p>
+</div>
+<h3>Why it is staged at all</h3>
+<p>Two intermediate results are named predictions that later models consume, so the chain cannot simply be written flat without losing them:</p>
+<ul><li><b>The first-stage blend</b> (trees + particle filter + beam search) guides four of the six re-decodes.</li><li><b>The working blend</b> (after the sequence-net stage) guides the other two, is the fallback every decoder reverts to on a failed well, and is the only leak-free vector the run emits — so it is the regression target for every gate.</li></ul>
+<p>Read the stages as <i>a computation order that produces two reusable guides</i>, not as a hierarchy of blends. The trees and the particle filter are independent members entering at derived weights; they are not nested one inside the other, and the kernel asserts the decoupled form reproduces the older nested arithmetic to 1e−9 ft.</p>
+<div class="call">
+<span class="lab">What the submission adds after the blend</span>
+<p>The sum above is the <b>blend</b>, and it is what every guided re-decode is computed against. The shipped submission wraps five further stages around it, in this order:</p>
+<ol><li><b>Global gain 1.12</b> — one multiplier on the drift, calibrated once.</li><li><b>+ 0.165692 · clip(alternative aligner − standard, ±6 ft)</b> — the capped alignment delta. Uncapped this cost +0.484 on the board; clipped to 6 ft it was worth −0.009 public and −0.038 private.</li><li><b>0.94 / 0.06 mix with a third sequence net</b> (dropout-regularised), injected after the blend so the re-decodes above regenerate unchanged.</li><li><b>× a per-row amplitude map</b> — one multiplier per decile of the spread between models, binned by rank within the run being scored, recentred to a drift-weighted mean of exactly 1 so it cannot re-fit the global gain. Range 0.95…1.03.</li><li><b>Smoothing in stratigraphic space</b> — on depth <i>plus</i> elevation rather than on depth itself: a gaussian over 80 rows at 0.80, then a robust degree-6 polynomial at 0.30. A well can dive steeply while staying in the same rock layer, so that quantity is far smoother than depth and much safer to regularise.</li></ol>
+<p>The order is the point. Steps 2–5 are applied <i>after</i> the blend precisely so the six re-decodes, which are functions of it, regenerate identically — which is what makes each stage separately attributable in the table at the top of this page.</p>
+</div>
+</section>
+<section id="the-thirteen-models">
+<h2 id="the-thirteen-models">The thirteen models</h2>
+<p>Three families. The distinction matters more than the weights: an <b>engine</b> or a <b>net</b> is a fixed prediction you can bank and correlate, whereas a <b>re-decode</b> is a function of a guide and is undefined until you name that guide.</p>
+<div class="scroller"><table>
+<thead><tr><th>model</th><th>what it is</th><th>family</th><th>weight</th><th>alone</th><th>error correlation vs blend</th></tr></thead><tbody>
+<tr><td><b>Gradient-boosted trees</b></td><td class="wrap">LightGBM on 186 engineered physics features</td><td>engine</td><td>.2589</td><td>7.90</td><td>.838</td></tr>
+<tr><td>Dilated CNN, whole well</td><td class="wrap">sequence net over the full well + 9 tree-derived inputs</td><td>net</td><td>.1505</td><td>10.01</td><td>.681</td></tr>
+<tr><td>Beam search</td><td class="wrap">dual-track search, gamma ray against the reference log</td><td>engine</td><td>.1479</td><td>9.95</td><td>.742</td></tr>
+<tr><td>Dilated CNN, cost volume</td><td class="wrap">dilated convolutions + cross-attention over a cost volume</td><td>net</td><td>.1233</td><td>9.59</td><td>.685</td></tr>
+<tr><td>Particle filter</td><td class="wrap">proposes paths; two learned rankers choose among them</td><td>engine</td><td>.0863</td><td>9.39</td><td>.731</td></tr>
+<tr><td>Re-decode — smoothed gamma ray</td><td class="wrap">pointwise cost, 5-row averaged input, later guide</td><td>re-decode</td><td>.0400</td><td>8.77</td><td>—</td></tr>
+<tr><td>Re-decode — averaged gamma ray</td><td>pointwise cost, averaged emission</td><td>re-decode</td><td>.0395</td><td>8.59</td><td>—</td></tr>
+<tr><td>Beam search, trend override</td><td class="wrap">the same search re-run with a trend constraint</td><td>engine</td><td>.0395</td><td>10.04</td><td>.715</td></tr>
+<tr><td>Re-decode — later guide</td><td class="wrap">pointwise cost against the post-net blend</td><td>re-decode</td><td>.0316</td><td>—</td><td>—</td></tr>
+<tr><td>Re-decode — windowed amplitude</td><td class="wrap">amplitude cost over a window rather than pointwise</td><td>re-decode</td><td>.0237</td><td>—</td><td>—</td></tr>
+<tr><td>Re-decode — shape + amplitude</td><td class="wrap">windowed cost on both shape and amplitude</td><td>re-decode</td><td>.0237</td><td>—</td><td>—</td></tr>
+<tr><td><b>Dip-rate dynamic program</b></td><td class="wrap">guide-free search over rates of change rather than depth</td><td>engine</td><td>.0192</td><td>13.34</td><td><b>.473</b></td></tr>
+<tr><td>Re-decode — heavy-tailed cost</td><td class="wrap">Cauchy emission, looser pull toward the guide</td><td>re-decode</td><td>.0158</td><td>—</td><td>—</td></tr>
+</tbody></table></div>
+<p><i>Alone</i> = pooled RMSE over all 773 training wells, scored on its own. <i>Error correlation</i> = how correlated its residuals are with the blend's; low is good, because it means the model is wrong where the blend is not.</p>
+<p><b>What earns a slot is decorrelation, not accuracy.</b> The dip-rate dynamic program is the clearest case: it is the <i>weakest</i> model standalone — 13.34 ft, barely better than holding the anchor flat at 15.910 — and it keeps weight in every fold, because at 0.473 its errors are by far the least correlated with the blend. Everything else sits between 0.68 and 0.84.</p>
+<p><b>How the re-decodes work.</b> Take the blend's current estimate, then run a dynamic-programming decode over depth that is <i>pulled toward</i> it but still free to follow the gamma ray where the two disagree. Vary the cost — pointwise or windowed, squared or heavy-tailed, raw or averaged gamma ray — and you get six repair paths, each fixing a different failure. They are one family on three axes: <b>emission</b> (pointwise vs windowed) × <b>cost</b> (squared, robust, amplitude, shape+amplitude) × <b>input scale</b> (raw vs averaged). Four are guided by the first-stage blend; two by the later one, which is why those two score best of the family on their own.</p>
+</section>
+<section id="rebuilding-every-piece-from-scratch">
+<h2 id="rebuilding-every-piece-from-scratch">Rebuilding every piece from scratch</h2>
+<p>Nothing is trained on external data. Every artifact derives from the competition data alone.</p>
+<h3>What has to be trained, and what does not</h3>
+<div class="scroller"><table>
+<thead><tr><th></th><th>models</th><th>what ships</th></tr></thead><tbody>
+<tr><td><b>Trained</b> — 4</td><td class="wrap">the trees, both blend CNNs, the particle filter's rankers</td><td>fitted weights, as artifacts</td></tr>
+<tr><td><b>Training-free</b> — 9</td><td class="wrap">both beam searches, the dip-rate program, all six re-decodes</td><td class="wrap">nothing — they are computed inside the run from the competition data</td></tr>
+</tbody></table></div>
+<p>Nine of the thirteen carry no learned parameters at all: their only constants are hand-set search widths and cost exponents. That is why the re-decode family was cheap to grow — a seventh variant costs a decode, not a training run. The third sequence net, injected after the blend, is trained as well; the table covers the thirteen blend models only.</p>
+<h3>Artifacts the run consumes</h3>
+<div class="scroller"><table>
+<thead><tr><th>artifact</th><th>contents</th><th>produced by</th></tr></thead><tbody>
+<tr><td><code>maek-ms-model</code></td><td class="wrap">the 186-feature tree model, 5 folds, plus feature order and manifest</td><td class="wrap">a 7-cell trainer that rebuilds the features and asserts its cross-validation score against 7.895818; its models were verified numerically identical to the shipped ones, fold by fold, at the tree level</td></tr>
+<tr><td><code>chassis-modules</code></td><td class="wrap">five of the six pipeline modules, hash-pinned</td><td class="wrap">this repository, <code>solution/modules/</code></td></tr>
+<tr><td><code>warplookup-module</code></td><td class="wrap">the cost-volume net's definition, pinned separately</td><td>this repository</td></tr>
+<tr><td><code>chassis-config</code></td><td>the frozen weights and constants</td><td class="wrap">this repository, <code>solution/modules/config.py</code></td></tr>
+<tr><td><code>warp-direct-weights</code></td><td class="wrap">the original whole-well architecture's fold weights — loaded and executed, but weighted zero in this configuration (see <code>solution/WEIGHTS.md</code>)</td><td>five training kernels</td></tr>
+<tr><td class="wrap"><code>warplookup-weights</code>, <code>warp-newfeats-weights</code>, <code>warpdrop-weights</code></td><td class="wrap">the three sequence nets' fold weights</td><td>training kernels, one per net</td></tr>
+<tr><td><code>mixpf-model</code>, <code>mixpf-reranker</code></td><td class="wrap">the particle filter's two learned rankers</td><td>training kernels</td></tr>
+</tbody></table></div>
+</section>
+<section id="where-each-piece-lives-in-the-code">
+<h2 id="where-each-piece-lives-in-the-code">Where each piece lives in the code</h2>
+<p>The code uses short internal names. This is the mapping.</p>
+<div class="scroller"><table>
+<thead><tr><th>in this document</th><th>in the code</th><th>file</th></tr></thead><tbody>
+<tr><td>gradient-boosted trees</td><td><code>maek</code></td><td><code>modules/maek_own.py</code></td></tr>
+<tr><td>dilated CNN, whole well</td><td><code>newfeats</code></td><td><code>modules/warp_costvolume.py</code></td></tr>
+<tr><td>dilated CNN, cost volume</td><td><code>warplookup</code></td><td><code>modules/warplookup_defs.py</code></td></tr>
+<tr><td>third sequence net (post-blend)</td><td><code>nn_warpdrop</code></td><td><code>modules/warp_costvolume.py</code></td></tr>
+<tr><td>beam search / with trend override</td><td><code>st_heavy</code> / <code>p2r</code></td><td><code>modules/stride_defs.py</code></td></tr>
+<tr><td>particle filter + rankers</td><td><code>mixpf</code></td><td><code>modules/mixpf_pipe.py</code></td></tr>
+<tr><td>dip-rate dynamic program</td><td><code>dp_rate_ens</code></td><td>in the kernel</td></tr>
+<tr><td>the six re-decodes</td><td class="wrap"><code>r_dp</code>, <code>r_vw</code>, <code>r_vw_pp</code>, <code>r_wlvl</code>, <code>r_wmix</code>, <code>r_cau</code></td><td>in the kernel</td></tr>
+<tr><td>first-stage blend / working blend</td><td class="wrap"><code>public_parent</code> / <code>candidate_preoverlay</code></td><td>in the kernel</td></tr>
+<tr><td>alternative aligner</td><td><code>dcorr</code></td><td><code>modules/stride_defs.py</code></td></tr>
+<tr><td>stratigraphic smoothing</td><td><code>uproj2</code></td><td>in the kernel</td></tr>
+<tr><td class="wrap">original whole-well architecture (executed, weight 0)</td><td>—</td><td><code>modules/warp_direct.py</code></td></tr>
+</tbody></table></div>
+<p>Six modules are loaded and <b>SHA-256 verified</b> at start-up; a drifted dataset version fails loudly rather than silently mis-scoring.</p>
+<div class="scroller"><table>
+<thead><tr><th>module</th><th>size</th><th>responsibility</th></tr></thead><tbody>
+<tr><td><code>maek_own.py</code></td><td>67 KB</td><td class="wrap">the tree model's feature build, inference and post-processing</td></tr>
+<tr><td><code>mixpf_pipe.py</code></td><td>31 KB</td><td class="wrap">particle filter, beam, selector, the two rankers</td></tr>
+<tr><td><code>stride_defs.py</code></td><td>16 KB</td><td>the beam-search aligner</td></tr>
+<tr><td><code>warplookup_defs.py</code></td><td>16 KB</td><td>the cost-volume net</td></tr>
+<tr><td><code>warp_costvolume.py</code></td><td>15 KB</td><td class="wrap">the whole-well net and its 33-feature builder</td></tr>
+<tr><td><code>warp_direct.py</code></td><td>9 KB</td><td>the original net architecture</td></tr>
+</tbody></table></div>
+</section>
+<section id="how-it-finished">
+<h2 id="how-it-finished">How it finished</h2>
+<p>Selected: public 5.888, private 7.341, <b>65th of 6,125</b>. The public and private orderings differ a great deal across the board, so the useful question is not the rank but whether each component held its value from one set of wells to the other. Every one of them did.</p>
+<div class="scroller"><table>
+<thead><tr><th>stage</th><th>public</th><th>private</th><th>Δ public</th><th>Δ private</th></tr></thead><tbody>
+<tr><td class="wrap">base ensemble — thirteen models, gain, smoother</td><td>5.930</td><td>7.474</td><td>—</td><td>—</td></tr>
+<tr><td>+ third sequence net at 0.06</td><td>5.918</td><td>7.415</td><td>−0.012</td><td>−0.059</td></tr>
+<tr><td>+ disagreement amplitude map</td><td>5.897</td><td>7.379</td><td>−0.021</td><td>−0.036</td></tr>
+<tr><td class="wrap"><b>+ capped alignment delta — shipped</b></td><td><b>5.888</b></td><td><b>7.341</b></td><td>−0.009</td><td>−0.038</td></tr>
+</tbody></table></div>
+<p>Every component improved both boards, and each by more on private than on public. That concordance — cross-validation, public and private all moving the same way — is the one signal that never misled me. Where a construct improved cross-validation but hurt the board, the board was wrong: see the top two rows of the table at the start of this page.</p>
+<div class="call warn">
+<span class="lab">The one decision to revisit</span>
+<p>Both final slots went to the public-validated family. A single slot spent on the maximum-cross-validation construct would have scored 7.292 instead of 7.341. The construct that would actually have won, the hedge at 7.280, was never a candidate at all: it had been filed as a probe on the strength of a board number.</p>
+<p>What this does <i>not</i> license is trusting cross-validation blindly. A lower cross-validation score is not on its own a reason to ship. What held up here was <i>concordance</i> — cross-validation, public and private all moving the same way — together with a per-well improvement distribution, rather than the pooled number on its own.</p>
+</div>
+</section>
+</div>
+</body>
+</html>

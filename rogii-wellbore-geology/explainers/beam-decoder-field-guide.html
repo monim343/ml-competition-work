@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The segment-beam decoder — a field guide</title>
+</head>
+<body>
+<div id="repobar"><a href="../index.html">&#8592; all documents</a><a href="https://github.com/monim343/ml-competition-work">source on GitHub</a></div>
+<style>
+#repobar{position:sticky;top:0;z-index:99;display:flex;justify-content:space-between;align-items:center;
+ gap:1rem;padding:.5rem 1rem;font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;
+ background:#16201f;color:#c9d3d0;border-bottom:1px solid #0b100f}
+#repobar a{color:#7fd3c4;text-decoration:none;font-weight:600}
+#repobar a:hover{text-decoration:underline}
+#repobar span{opacity:.65}
+@media print{#repobar{display:none}}
+</style>
+<title>The segment-beam decoder — a field guide</title>
+<style>
+  :root {
+    --ground: #fafbfc; --ink: #1c2530; --ink-soft: #4a5768; --panel: #f0f2f5;
+    --line: #d8dde4; --accent: #b45309; --accent-soft: #f5e7d0; --beam: #0e7490;
+    --beam-soft: #d3ecf2; --truth: #6b7280; --bad: #b91c1c; --good: #15803d;
+    --code-bg: #eef1f4; --lane: #7c3aed;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #12161c; --ink: #e5e9ee; --ink-soft: #9aa7b5; --panel: #1a2029;
+      --line: #2c3542; --accent: #e8a33d; --accent-soft: #3a2d18; --beam: #4cc3dd;
+      --beam-soft: #143842; --truth: #8b94a3; --bad: #f87171; --good: #4ade80;
+      --code-bg: #1e242e; --lane: #a78bfa;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #12161c; --ink: #e5e9ee; --ink-soft: #9aa7b5; --panel: #1a2029;
+    --line: #2c3542; --accent: #e8a33d; --accent-soft: #3a2d18; --beam: #4cc3dd;
+    --beam-soft: #143842; --truth: #8b94a3; --bad: #f87171; --good: #4ade80;
+    --code-bg: #1e242e; --lane: #a78bfa;
+  }
+  :root[data-theme="light"] {
+    --ground: #fafbfc; --ink: #1c2530; --ink-soft: #4a5768; --panel: #f0f2f5;
+    --line: #d8dde4; --accent: #b45309; --accent-soft: #f5e7d0; --beam: #0e7490;
+    --beam-soft: #d3ecf2; --truth: #6b7280; --bad: #b91c1c; --good: #15803d;
+    --code-bg: #eef1f4; --lane: #7c3aed;
+  }
+  html { background: var(--ground); }
+  body { color: var(--ink); font-family: Charter, "Iowan Old Style", Georgia, serif;
+         font-size: 1.05rem; line-height: 1.65; margin: 0; padding: 0 1.25rem 6rem; }
+  main { max-width: 46rem; margin: 0 auto; }
+  h1, h2, h3 { font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+               line-height: 1.2; text-wrap: balance; }
+  h1 { font-size: 2.3rem; font-weight: 700; margin: 3.5rem 0 0.5rem; letter-spacing: -0.02em; }
+  h2 { font-size: 1.45rem; margin: 3rem 0 0.75rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+  h2 .no { color: var(--accent); font-variant-numeric: tabular-nums; margin-right: 0.5rem; }
+  h3 { font-size: 1.1rem; margin: 1.8rem 0 0.4rem; }
+  .kicker { font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif; text-transform: uppercase;
+            letter-spacing: 0.14em; font-size: 0.75rem; color: var(--accent); margin-top: 3rem; }
+  .lede { font-size: 1.15rem; color: var(--ink-soft); margin: 0.5rem 0 1rem; }
+  p { margin: 0.9rem 0; }
+  code, pre { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 0.88em; }
+  code { background: var(--code-bg); padding: 0.1em 0.35em; border-radius: 4px; }
+  pre { background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px;
+        padding: 0.9rem 1.1rem; overflow-x: auto; line-height: 1.5; }
+  pre code { background: none; padding: 0; }
+  table { border-collapse: collapse; width: 100%; margin: 1.2rem 0; font-size: 0.92rem;
+          font-variant-numeric: tabular-nums; }
+  th, td { border: 1px solid var(--line); padding: 0.4rem 0.65rem; text-align: left; }
+  th { background: var(--panel); font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif; font-size: 0.82rem; }
+  .num { text-align: right; }
+  .note { background: var(--panel); border-left: 3px solid var(--accent); padding: 0.7rem 1rem;
+          border-radius: 0 8px 8px 0; margin: 1.3rem 0; font-size: 0.97rem; }
+  .note b:first-child { color: var(--accent); }
+  .fieldnote { border-left-color: var(--lane); }
+  .fieldnote b:first-child { color: var(--lane); }
+  .toc { columns: 2; gap: 2rem; font-size: 0.95rem; margin: 1rem 0 0; padding-left: 1.2rem; }
+  .toc li { margin: 0.25rem 0; }
+  a { color: var(--beam); }
+  .demo { background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+          padding: 1rem 1.1rem; margin: 1.5rem -1.5rem; }
+  @media (max-width: 56rem) { .demo { margin: 1.5rem 0; } }
+  .demo canvas { width: 100%; height: auto; display: block; border-radius: 8px; background: var(--ground); }
+  .controls { display: flex; flex-wrap: wrap; gap: 0.8rem 1.4rem; align-items: center; margin-top: 0.8rem;
+              font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif; font-size: 0.82rem; }
+  .controls label { display: flex; align-items: center; gap: 0.45rem; white-space: nowrap; }
+  .controls input[type=range] { width: 7rem; accent-color: var(--beam); }
+  .controls output { font-variant-numeric: tabular-nums; min-width: 2.4rem; color: var(--accent); font-weight: 600; }
+  .controls button { font: inherit; padding: 0.35rem 0.9rem; border-radius: 999px;
+                     border: 1px solid var(--line); background: var(--ground); color: var(--ink); cursor: pointer; }
+  .controls button:hover { border-color: var(--beam); }
+  .controls button:focus-visible, .controls input:focus-visible { outline: 2px solid var(--beam); outline-offset: 2px; }
+  .controls .toggle-on { background: var(--beam); color: #fff; border-color: var(--beam); }
+  .readout { font-family: ui-monospace, Menlo, monospace; font-size: 0.85rem; margin-top: 0.6rem; color: var(--ink-soft); }
+  .readout b { color: var(--ink); }
+  details { margin: 0.8rem 0; }
+  summary { cursor: pointer; font-weight: 600; font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif; font-size: 0.95rem; }
+  details[open] summary { color: var(--beam); }
+  details > div { padding: 0.4rem 0 0.2rem 1.1rem; border-left: 2px solid var(--line); margin-top: 0.4rem; }
+  .legend { display: flex; gap: 1.4rem; flex-wrap: wrap; font-size: 0.8rem; margin-top: 0.55rem;
+            font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif; }
+  .legend span { display: inline-flex; align-items: center; gap: 0.4rem; }
+  .swatch { display: inline-block; width: 1.4em; height: 0.28em; border-radius: 2px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<main>
+<p class="kicker">Wellbore geosteering &middot; trajectory decoding &middot; a working engineer's tutorial</p>
+<h1>The segment-beam decoder</h1>
+<p class="lede">A beam search whose moves are not steps but <em>strides</em> — straight segments,
+120 to 1,280 rows long — walking a geometric hypothesis from the anchor to the far end of the well. The state
+space, the bucket lattice, the arithmetic of who competes with whom, and a live sandbox.</p>
+
+<ol class="toc">
+<li><a href="#s1">Setting: S-space and the anchor</a></li>
+<li><a href="#s2">The state is a hypothesis, not a position</a></li>
+<li><a href="#s3">The proposal menu</a></li>
+<li><a href="#s4">Scoring a segment</a></li>
+<li><a href="#s5">Buckets: the position lattice</a></li>
+<li><a href="#s6">Tree growth, not cross-products</a></li>
+<li><a href="#s7">A numeric walk from the anchor</a></li>
+<li><a href="#s8">Sandbox</a></li>
+<li><a href="#s9">The corridor end &amp; final selection</a></li>
+<li><a href="#s10">Field note: the mod-60 lanes</a></li>
+<li><a href="#s11">Segment-beam versus the row-level aligner</a></li>
+<li><a href="#s12">Check your understanding</a></li>
+</ol>
+
+<h2 id="s1"><span class="no">1</span>Setting: S-space and the anchor</h2>
+
+<p>A horizontal well logs gamma ray (GR) along its measured depth. A nearby vertical
+<strong>typewell</strong> provides the reference barcode <code>(TVT, GR)</code> — GR as a function
+of position in the layer stack. For the surveyed first stretch of the well, TVT is known; the last
+known point is the <strong>anchor</strong>. The task: predict TVT for every row after the anchor —
+the stretch this page calls the <em>corridor</em>.</p>
+
+<p>The decoder works in <strong>S-space</strong>: <code>S = TVT + Z</code>, where Z is the borehole's
+true vertical depth. S is the elevation of the geological datum at the bit's map position — a
+property of the <em>rock</em>, not of the well path. Geology is locally planar, so S changes
+smoothly and near-linearly along the lateral. That single change of variable is what makes
+straight-line segments a sensible hypothesis language:</p>
+
+<pre><code>hypothesis:   S(md) is piecewise LINEAR in measured depth
+prediction:   TVT(md) = S(md) − Z(md)     (Z is known from the survey)</code></pre>
+
+<p>A straight segment in S is <em>not</em> straight in TVT — it bends with the borehole's own
+vertical motion. One especially meaningful slope exists per stretch of borehole: the slope equal
+to the local Z-slope, which makes TVT <em>constant</em> — the bit riding a single bed. That
+hypothesis gets its own proposal family (Section 3).</p>
+
+<h2 id="s2"><span class="no">2</span>The state is a hypothesis, not a position</h2>
+
+<p>The row-level GR aligner (this tutorial's sibling) has states that are bare positions. this decoder's state is heavier:</p>
+
+<pre><code>State = ( pos       — corridor row where my last segment ended
+        , S-value   — where I am in S
+        , slope     — my last segment's slope  (momentum!)
+        , family    — which proposal family produced my last segment
+        , cost      — accumulated negative log-likelihood since the anchor
+        , segments  — my full history, for reconstruction )</code></pre>
+
+<p>The slope in the state is the crucial entry: it lets the scoring say <em>"trajectories have
+momentum"</em> (a persistence penalty compares each new slope to the parent's). A consequence with
+teeth: two hypotheses at the same <code>pos</code> and same <code>S</code> but different slopes are
+<strong>not interchangeable</strong> — their futures cost differently. So unlike a row-level aligner, this decoder cannot merge paths that meet; the search is a growing <em>tree</em>, tamed only by pruning.</p>
+
+<p>The decode starts from a single seed: <code>pos 0, S = anchor TVT + anchor Z,
+slope = trend</code>, where the <strong>trend</strong> is a robust slope fitted on the last ~200
+known rows of this well (clipped to ±0.12 ft/ft).</p>
+
+<h2 id="s3"><span class="no">3</span>The proposal menu</h2>
+
+<p>Each surviving state proposes its next segment as a <em>combination</em> of a length and a slope:</p>
+
+<h3>Seven lengths</h3>
+<p><code>120, 240, 360, 540, 720, 960, 1280</code> rows — a roughly geometric ladder (at ~2 ft of
+measured depth per row, from ~240 ft to over half a mile). These are <em>alternative strides</em>
+proposed simultaneously, not a division of the corridor: the corridor gets segmented differently
+by every hypothesis.</p>
+
+<h3>Two slope families</h3>
+<table>
+<tr><th>family</th><th>candidates (cap)</th><th>built from</th><th>meaning</th></tr>
+<tr><td><code>slope_s</code></td><td class="num">≤ 17</td>
+<td>9 fixed base slopes (−0.08…+0.08) ∪ trend ± {0, .015, .025, .04} ∪ parent-slope ± {0, .015, .025, .04}</td>
+<td>"keep drifting like the well drifts" — absolute safety net + relative refinement</td></tr>
+<tr><td><code>flat_tvt</code></td><td class="num">≤ 11</td>
+<td>local Z-slope ± {0, .005, .01, .02, .03} — computed from <em>this well's trajectory over this exact candidate segment</em></td>
+<td>"ride the bed" — TVT stays (nearly) constant</td></tr>
+</table>
+
+<div class="note"><b>Not a fixed grid.</b> Only the 9 base slopes are identical across wells.
+The rest is anchored to well-specific quantities: the heel trend (per well), the parent's slope
+(per hypothesis!), the borehole geometry (per well, per position, per candidate length). Deep in
+the corridor, two hypotheses in the same bucket propose <em>different</em> slope sets. The proposal
+distribution is dense near what is currently plausible and sparse elsewhere — the same "relative
+beats absolute" principle that runs through this whole problem.</div>
+
+<p>Arithmetic: one parent × 7 lengths × (≤17 + ≤11) slopes ≈ up to <strong>196 children</strong>
+per expansion.</p>
+
+<h2 id="s4"><span class="no">4</span>Scoring a segment</h2>
+
+<p>A candidate segment is a straight line in S from the parent's endpoint. Its cost has one
+evidence term and four priors:</p>
+
+<pre><code>evidence every 18th row along the segment, at most 160 points:
+             TVT = S(md) − Z(md)  →  look up typewell GR at that TVT
+             d = (observed GR − typewell GR) / gr_scale
+             gr_loss = mean( log1p(d²) )          ← robust: outliers saturate
+           weight: W_GR · gr_loss · n_scored_rows
+
+priors     bounds        leaving the typewell's TVT range        (W=0.35)
+           persistence   ((slope − parent_slope)/0.035)²          (W=2.0)  ← momentum
+           trend         ((slope − well_trend)/0.070)²            (W=0.18)
+           length        (log(len/540)/0.85)²                     (W=0.15)
+           family switch                                          (W=0, off in production)</code></pre>
+
+<p>Two design choices worth noticing. The <em>robust</em> GR loss (<code>log1p(d²)</code>) means
+one bad bed can't veto a segment — mismatch saturates. And the persistence weight (2.0) towers
+over the trend weight (0.18): the model believes momentum locally and the regional trend only
+loosely. A child's total cost = parent's cost + this segment's cost. Cumulative cost <em>is</em>
+the negative log-likelihood of the whole trajectory from the anchor.</p>
+
+<h2 id="s5"><span class="no">5</span>Buckets: the position lattice</h2>
+
+<p>Children are filed into <strong>buckets</strong> keyed by where their segment <em>ends</em>.
+The seed's children land in seven buckets: 120, 240, 360, 540, 720, 960, 1280. But buckets
+proliferate: survivors at 120 spawn buckets at 240, 360, 480, 660, 840, 1080, 1400; survivors at
+240 add 600, 780, 1200… Every position that is a <em>sum of menu lengths</em> eventually hosts one.</p>
+
+<p>The sweep visits positions 0…n in order. At each existing bucket:</p>
+<ol>
+<li><strong>Prune to 24</strong> (the beam width) — with a diversity floor first: the best
+<strong>10 per family</strong> are guaranteed consideration, then global cost ranking fills the 24.
+(Buckets are also trimmed opportunistically whenever they exceed 4×24 = 96 states.)</li>
+<li><strong>Expand</strong>: each of the 24 survivors generates its ≤196 children into buckets
+downstream.</li>
+</ol>
+
+<p>The general arrival rule: <em>a bucket at position P receives children from every existing
+bucket at P−L, for each menu length L</em>. Each contributor sends at most 24 parents × ~28
+same-length children ≈ 670 arrivals.</p>
+
+<h2 id="s6"><span class="no">6</span>Tree growth, not cross-products</h2>
+
+<p>A tempting misreading: "24 states at 120, 24 slopes at 240 — so 24 × 24 combinations?" No —
+and the reason is load-bearing. A child is created <em>by</em> a specific parent and is meaningless
+without it: the child's starting S is <em>that parent's</em> endpoint, and its persistence penalty
+compares to <em>that parent's</em> slope. A slope proposal is never recombined with any other
+parent. What a bucket holds is complete trajectories-so-far, each with one definite lineage:</p>
+
+<pre><code>bucket 240, at sweep time:
+  ~670 trajectories:  anchor ─(some 0–120 segment)─ 120 ─(some 120–240 segment)─ 240
+  ~ 25 trajectories:  anchor ─(one straight 0–240 segment)──────────────────────  240
+  → all ranked together by cumulative cost → best 10/family floor → keep 24</code></pre>
+
+<p>Hypotheses with different segmentation rhythms compete head-to-head on total log-likelihood
+alone. And because the state includes slope and history, <em>nothing merges</em> — the beam's 24
+slots at each position are the only thing standing between the tree and exponential growth.</p>
+
+<h2 id="s7"><span class="no">7</span>A numeric walk from the anchor</h2>
+
+<table>
+<tr><th>sweep at</th><th>bucket holds</th><th class="num">arrivals</th><th>then</th></tr>
+<tr><td>0</td><td>the seed (S = anchor, slope = trend)</td><td class="num">1</td>
+<td>expands: ~25 children per length × 7 lengths → 7 buckets</td></tr>
+<tr><td>120</td><td>seed's L=120 children</td><td class="num">~25</td>
+<td>prune 24 → expand → children at 240, 360, 480, 660, 840, 1080, 1400</td></tr>
+<tr><td>240</td><td>seed's L=240 (~25) + 120-survivors' L=120 (24 × ~28)</td><td class="num">~695</td>
+<td>prune 24 → expand</td></tr>
+<tr><td>360</td><td>seed L=360 + 120's L=240 + 240's L=120</td><td class="num">~1,365</td>
+<td>prune 24 → expand</td></tr>
+<tr><td>⋮</td><td>typical mid-corridor bucket: up to 7 contributors</td><td class="num">~2–4,000</td>
+<td>prune 24 → expand</td></tr>
+</table>
+
+<p>By mid-corridor a surviving hypothesis is typically 3–9 segments deep. The exponential space of
+all (length, slope) sequences is never enumerated — at every reachable position it is cut back to
+the 24 best explanations of everything since the anchor.</p>
+
+<h2 id="s8"><span class="no">8</span>Sandbox</h2>
+
+<p>A scaled-down version of the decoder: synthetic barcode (left strip), a lateral that drifts through it, segment
+menu {40, 80, 160, 240} rows, both proposal families, persistence + trend + length priors, per-bucket
+beam pruning. Dots mark segment boundaries of the winning hypothesis; thin lines are the other
+finalists that reached the end (the "runners-up" a production variant averages over).</p>
+
+<div class="demo">
+  <canvas id="cv" width="1080" height="520"></canvas>
+  <div class="legend">
+    <span><span class="swatch" style="background:var(--truth)"></span>true trajectory</span>
+    <span><span class="swatch" style="background:var(--beam)"></span>selected hypothesis (dots = segment ends)</span>
+    <span><span class="swatch" style="background:var(--beam-soft);height:0.7em"></span>other finalists</span>
+    <span><span class="swatch" style="background:var(--accent)"></span>GR barcode</span>
+  </div>
+  <div class="controls">
+    <label>beam width <input type="range" id="bw" min="1" max="64" value="24"><output id="bwo">24</output></label>
+    <label>persistence <input type="range" id="pw" min="0" max="60" value="20" step="1"><output id="pwo">20</output></label>
+    <label>trend pull <input type="range" id="tw" min="0" max="30" value="2" step="1"><output id="two">2</output></label>
+    <label>noise <input type="range" id="nz" min="0" max="30" value="8"><output id="nzo">8</output></label>
+    <button id="reseed">new well</button>
+    <button id="fin">finalists: on</button>
+  </div>
+  <div class="readout" id="readout"></div>
+</div>
+
+<p>Experiments to run, in order:</p>
+<ol>
+<li><strong>Beam width 1</strong> — greedy segment choice. Note how a single early wrong stride
+poisons everything after; then raise the width and find the recovery threshold.</li>
+<li><strong>Persistence to 0</strong> — slopes become free agents; the path zigzags to chase noise.
+Persistence to 60 — the first slope choice becomes destiny. The production value expresses
+"momentum is real but not absolute."</li>
+<li><strong>Trend pull high</strong> — every hypothesis is dragged toward the heel trend even when
+the barcode disagrees; watch wells where the true drift <em>changes</em> mid-corridor suffer.</li>
+<li><strong>Finalists on, noise up</strong> — the finalist spread is the honest uncertainty
+statement; watch it fan out over flat stretches of barcode.</li>
+</ol>
+
+<h2 id="s9"><span class="no">9</span>The corridor end &amp; final selection</h2>
+
+<p>Three things are special at the end of the corridor:</p>
+<ol>
+<li><strong>Truncation</strong>: proposals overshooting row n are clipped to n and scored on what
+remains.</li>
+<li><strong>Snap</strong>: a segment that would end within ~54 rows of n (0.45 × the shortest menu
+length) is stretched to n — no beam capacity wasted on meaningless tail stubs.</li>
+<li><strong>Selection</strong>: states at n stop. The terminal bucket — a mix of every segmentation
+rhythm and family lineage — is pruned to 24 finalists, and the <em>single cheapest</em> becomes the
+prediction. This is the only prune-to-1 in the algorithm.</li>
+</ol>
+
+<p>Measured perspective on that last step: across all 773 training wells, picking the best of the 24 finalists in hindsight beats the one the cost function picks by only ~0.045 pooled RMSE. Final selection is nearly a solved
+problem — <strong>when the decoder fails, the truth fell out of the beam far upstream</strong>, not at
+the finish line. That's why production also runs a doubled variant (beam 48, family floor 20) and
+averages the two decoders: width upstream, not cleverness at the end.</p>
+
+<h2 id="s10"><span class="no">10</span>Field note: the mod-60 lanes</h2>
+
+<div class="note fieldnote"><b>A discovered quirk, not a design.</b> Six menu lengths are multiples
+of 60 — but 1280 is not. Since bucket positions are sums of lengths, the lattice splits into
+residue classes mod 60: histories containing one 1280-stride live at positions ≡ 20 (mod 60), two
+of them at ≡ 40, none at ≡ 0. The classes never share a bucket mid-corridor (they first re-merge
+after three 1280s, at 3840 — or at the corridor end, where truncation and snap put everyone in the
+terminal bucket).</div>
+
+<p>Concretely: bucket 1280 contains <em>only</em> the seed's single-segment children — the "one
+long straight shot" family runs in a protected lane, never competing against the multi-segment
+population until the very end. Is that bad? Not obviously: it is accidental <em>diversity
+preservation</em>, structurally similar to the deliberate per-family quota — a lineage that would
+lose every local comparison survives to make its case globally. The mild length prior keeps the
+lane small. Replacing 1280 with 1260 or 1320 would restore full mixing; whether that helps is an
+empirical question, and the production config stays frozen on measured performance, not on
+lattice aesthetics.</p>
+
+<h2 id="s11"><span class="no">11</span>Segment-beam versus the row-level aligner</h2>
+
+<table>
+<tr><th></th><th>row-level GR aligner</th><th>the segment-beam decoder</th></tr>
+<tr><td>state</td><td>typewell index (a position)</td><td>position + S + slope + family + history</td></tr>
+<tr><td>one move</td><td>1 row, index step d ∈ [−2, 2]</td><td>a straight 120–1280-row segment</td></tr>
+<tr><td>motion model</td><td>move cost mc·|d|</td><td>persistence + trend + length priors</td></tr>
+<tr><td>paths that meet</td><td>merge (Markov in position)</td><td>never merge (state too rich)</td></tr>
+<tr><td>beam</td><td>8–20</td><td>24, with a 10-per-family floor (variant: 48/20)</td></tr>
+<tr><td>evidence</td><td>every row, squared error</td><td>every 18th row, robust log-loss</td></tr>
+<tr><td>output</td><td>7 diverse paths → features for a GBM</td><td>a trajectory member of the final blend</td></tr>
+</table>
+
+<p>The design lesson, stated once and worth repeating: <em>choose the state so the physics you
+believe in is expressible.</em> The aligner cannot say "trajectories have momentum" — its state has
+no slope. This one can. The price is a state too rich to merge, hence a pure tree search where the
+beam width and the family floor carry the entire burden of keeping the truth alive.</p>
+
+<h2 id="s12"><span class="no">12</span>Check your understanding</h2>
+
+<details><summary>1. Why can't the decoder merge two hypotheses that arrive at the same position with the same S?</summary><div>
+<p>Their futures are not exchangeable: the persistence penalty of every future segment depends on
+the arriving slope, and proposal sets themselves are built around the parent's slope. Cheapest-now
+does not imply cheapest-onward, which is precisely the condition merging needs (the Markov
+property). The row aligner's bare-position state satisfies it; this richer state does not.</p>
+</div></details>
+
+<details><summary>2. Bucket 480 — who delivers children to it, and roughly how many?</summary><div>
+<p>Contributors are buckets at 480 − L: 360 (L=120), 240 (L=240), 120 (L=360) — position 0 would
+need L=480, which is not on the menu, and 480−540 &lt; 0. Three contributors × up to 24 parents ×
+~28 same-length children ≈ <strong>~2,000 arrivals</strong>, pruned to 24.</p>
+</div></details>
+
+<details><summary>3. Why is the flat_tvt family recomputed per candidate segment instead of using fixed slopes?</summary><div>
+<p>Because "TVT constant" is not a fixed slope in S — it means dS/dmd equals the borehole's own
+dZ/dmd, which changes along the well. The family computes the local Z-slope over the exact rows of
+each proposed segment and brackets it. A fixed grid could not express "ride the bed" at all
+positions.</p>
+</div></details>
+
+<details><summary>4. Picking the best of the 24 finalists in hindsight is only ~0.045 better than the selected one. What does that tell you to work on — and what not?</summary><div>
+<p>Not final selection: even a perfect selector recovers almost nothing. The losses happen
+upstream, where the truth's lineage gets pruned out of some mid-corridor bucket. Levers that act
+there: beam width, family floors, proposal diversity (protected lanes!), and better evidence.
+This is the measured justification for the doubled 48/20 variant.</p>
+</div></details>
+
+<details><summary>5. In the sandbox, why do the finalists agree at the start and fan out toward the toe — even with a wide beam?</summary><div>
+<p>All finalists share the anchor (a hard constraint), and evidence accumulates from that end —
+early segments are pinned by both the anchor and the data. Toward the toe, hypotheses have had more
+segments' worth of freedom, and less downstream evidence exists to discriminate them; uncertainty
+grows monotonically with distance from the anchor. The fan <em>is</em> the information structure of
+the problem, the same asymmetry that makes sweep direction matter for any pruned search.</p>
+</div></details>
+
+<figure>
+<figcaption style="border-top:1px solid var(--line); padding-top:0.8rem; margin-top:3rem">
+Built from the production source (<code>stride_defs.py</code>: state, proposal families, cost
+weights, prune quotas, snap rules) and this project's measured results (the 773-well gap study of section 9, the lattice analysis of section 10). All parameters and numbers are the real ones.
+</figcaption>
+</figure>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  let seed = 11;
+
+  const K = 260, N = 400;
+  const LENGTHS = [40, 80, 160, 240];
+  const BASE = [-0.5, -0.35, -0.2, -0.1, 0, 0.1, 0.2, 0.35, 0.5];   // ft TVT per row (scaled)
+  const RELD = [-0.15, -0.07, 0, 0.07, 0.15];
+  const FLATD = [-0.06, -0.03, 0, 0.03, 0.06];
+  let twGR, truth, obs, trend;
+
+  function makeWorld() {
+    const rnd = mulberry32(seed * 7919 + 3);
+    twGR = new Float64Array(K);
+    let j = 0;
+    while (j < K) {
+      const bed = 6 + Math.floor(rnd() * 26);
+      const level = 25 + rnd() * 95;
+      for (let k = j; k < Math.min(K, j + bed); k++) twGR[k] = level;
+      j += bed;
+    }
+    const sm = new Float64Array(K);
+    for (let k = 0; k < K; k++) {
+      let s = 0, c = 0;
+      for (let d = -2; d <= 2; d++) { const q = k + d; if (q >= 0 && q < K) { s += twGR[q]; c++; } }
+      sm[k] = s / c;
+    }
+    twGR = sm;
+    // truth: piecewise-linear slopes with occasional slope changes (the decoder's own model, roughly)
+    truth = new Float64Array(N);
+    let pos = 70 + rnd() * 60, slope = (rnd() - 0.5) * 0.5;
+    for (let i = 0; i < N; i++) {
+      if (rnd() < 0.012) slope = Math.max(-0.6, Math.min(0.6, slope + (rnd() - 0.5) * 0.5));
+      truth[i] = pos; pos += slope;
+      if (pos < 8) { pos = 8; slope = Math.abs(slope) * 0.7; }
+      if (pos > K - 9) { pos = K - 9; slope = -Math.abs(slope) * 0.7; }
+    }
+    trend = (truth[Math.min(60, N - 1)] - truth[0]) / Math.min(60, N - 1);
+    obs = new Float64Array(N);
+    remakeObs();
+  }
+  function remakeObs() {
+    const rnd = mulberry32(seed * 131 + 5);
+    const nz = +ui.nz.value;
+    for (let i = 0; i < N; i++) {
+      const p = truth[i], j0 = Math.floor(p), fr = p - j0;
+      const clean = twGR[Math.max(0, Math.min(K - 1, j0))] * (1 - fr)
+                  + twGR[Math.max(0, Math.min(K - 1, j0 + 1))] * fr;
+      obs[i] = clean + (rnd() * 2 - 1) * nz;
+    }
+  }
+
+  function twAt(p) {
+    const j0 = Math.floor(p), fr = p - j0;
+    const a = twGR[Math.max(0, Math.min(K - 1, j0))];
+    const b = twGR[Math.max(0, Math.min(K - 1, j0 + 1))];
+    return a * (1 - fr) + b * fr;
+  }
+
+  // ---------- segment-beam decoder, scaled down; Z = 0 so S = TVT ----------
+  function stride(B, wPersist, wTrend) {
+    const ES = 140, WLEN = 3, TARGET = 120;
+    const seedState = { pos: 0, s: truth[0], slope: trend, fam: "seed", cost: 0, segs: [] };
+    const buckets = new Map([[0, [seedState]]]);
+    const famFloor = Math.max(1, Math.floor(B * 0.4));
+    function prune(arr) {
+      if (arr.length <= B) return arr.sort((a, b) => a.cost - b.cost);
+      const out = new Set();
+      for (const fam of ["slope_s", "flat"]) {
+        arr.filter(s => s.fam === fam).sort((a, b) => a.cost - b.cost)
+           .slice(0, famFloor).forEach(s => out.add(s));
+      }
+      arr.slice().sort((a, b) => a.cost - b.cost).forEach(s => { if (out.size < 64) out.add(s); });
+      return [...out].sort((a, b) => a.cost - b.cost).slice(0, B);
+    }
+    for (let pos = 0; pos <= N; pos++) {
+      let states = buckets.get(pos);
+      if (!states) continue;
+      states = prune(states);
+      buckets.set(pos, states);
+      if (pos === N) continue;
+      for (const st of states) {
+        for (const L of LENGTHS) {
+          let end = Math.min(N, pos + L);
+          if (end < N && N - end < 18) end = N;              // snap
+          const len = end - pos;
+          const families = [
+            ["slope_s", [...new Set([...BASE, ...RELD.map(d => st.slope + d),
+                                     ...RELD.map(d => trend + d)])]],
+            ["flat", FLATD.slice()],                          // Z≡0 ⇒ ride-the-bed = slope 0
+          ];
+          for (const [fam, slopes] of families) {
+            for (const sl of slopes) {
+              if (Math.abs(sl) > 0.75) continue;
+              // score every 4th row
+              let gl = 0, ns = 0;
+              for (let i = pos; i < end; i += 4) {
+                const S = st.s + sl * (i - pos + 1);
+                if (S < 0 || S > K - 1) { gl += 4; ns++; continue; }
+                const d = (obs[i] - twAt(S)) / (ES / 10);
+                gl += Math.log1p(d * d); ns++;
+              }
+              const segCost = gl
+                + wPersist * Math.pow((sl - st.slope) / 0.18, 2)
+                + wTrend * Math.pow((sl - trend) / 0.35, 2)
+                + WLEN * Math.pow(Math.log(len / TARGET) / 0.85, 2);
+              const child = {
+                pos: end, s: st.s + sl * len, slope: sl, fam,
+                cost: st.cost + segCost,
+                segs: st.segs.concat([[pos, end, st.s, sl]]),
+              };
+              let bk = buckets.get(end);
+              if (!bk) { bk = []; buckets.set(end, bk); }
+              bk.push(child);
+              if (bk.length > B * 4) buckets.set(end, prune(bk));
+            }
+          }
+        }
+      }
+    }
+    const finals = prune(buckets.get(N) || []);
+    return finals;
+  }
+
+  function pathOf(state) {
+    const p = new Float64Array(N);
+    for (const [a, b, s0, sl] of state.segs)
+      for (let i = a; i < b; i++) p[i] = s0 + sl * (i - a + 1);
+    return p;
+  }
+
+  // ---------- UI ----------
+  const cv = document.getElementById("cv"), ctx = cv.getContext("2d");
+  const ui = { bw: document.getElementById("bw"), pw: document.getElementById("pw"),
+               tw: document.getElementById("tw"), nz: document.getElementById("nz") };
+  const outs = { bw: bwo, pw: pwo, tw: two, nz: nzo };
+  let showFin = true;
+  function cssVar(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+
+  function draw() {
+    for (const k of ["bw", "pw", "tw", "nz"]) outs[k].value = ui[k].value;
+    const finals = stride(+ui.bw.value, +ui.pw.value / 10, +ui.tw.value / 10);
+    const W = cv.width, H = cv.height, stripW = 96, padT = 14, padB = 14;
+    const plotX = stripW + 26, plotW = W - plotX - 14;
+    const y = j => padT + (j / (K - 1)) * (H - padT - padB);
+    const x = i => plotX + (i / (N - 1)) * plotW;
+    ctx.clearRect(0, 0, W, H);
+    ctx.strokeStyle = cssVar("--line"); ctx.strokeRect(8.5, padT - 4.5, stripW, H - padT - padB + 9);
+    ctx.beginPath();
+    for (let j2 = 0; j2 < K; j2++) {
+      const gx = 12 + (twGR[j2] / 130) * (stripW - 10);
+      j2 ? ctx.lineTo(gx, y(j2)) : ctx.moveTo(gx, y(j2));
+    }
+    ctx.strokeStyle = cssVar("--accent"); ctx.lineWidth = 1.4; ctx.stroke();
+
+    if (showFin) {
+      ctx.lineWidth = 1;
+      for (let f = 1; f < finals.length; f++) {
+        const p = pathOf(finals[f]);
+        ctx.beginPath();
+        for (let i = 0; i < N; i++) i ? ctx.lineTo(x(i), y(p[i])) : ctx.moveTo(x(i), y(p[i]));
+        ctx.strokeStyle = cssVar("--beam"); ctx.globalAlpha = 0.16; ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    }
+    ctx.setLineDash([5, 4]); ctx.beginPath();
+    for (let i = 0; i < N; i++) i ? ctx.lineTo(x(i), y(truth[i])) : ctx.moveTo(x(i), y(truth[i]));
+    ctx.strokeStyle = cssVar("--truth"); ctx.lineWidth = 1.6; ctx.stroke(); ctx.setLineDash([]);
+
+    const sel = finals[0], p = pathOf(sel);
+    ctx.beginPath();
+    for (let i = 0; i < N; i++) i ? ctx.lineTo(x(i), y(p[i])) : ctx.moveTo(x(i), y(p[i]));
+    ctx.strokeStyle = cssVar("--beam"); ctx.lineWidth = 2.2; ctx.stroke();
+    ctx.fillStyle = cssVar("--beam");
+    for (const [a, b, s0, sl] of sel.segs) {
+      ctx.beginPath(); ctx.arc(x(b - 1), y(s0 + sl * (b - a)), 3.4, 0, 7); ctx.fill();
+    }
+    ctx.fillStyle = cssVar("--ink");
+    ctx.beginPath(); ctx.arc(x(0), y(truth[0]), 4.5, 0, 7); ctx.fill();
+    ctx.font = "11px system-ui"; ctx.fillText("anchor", x(0) + 8, y(truth[0]) - 8);
+
+    let se = 0, seo = Infinity;
+    for (let i = 0; i < N; i++) se += Math.pow(p[i] - truth[i], 2);
+    for (const f of finals) {
+      const q = pathOf(f); let s2 = 0;
+      for (let i = 0; i < N; i++) s2 += Math.pow(q[i] - truth[i], 2);
+      seo = Math.min(seo, s2);
+    }
+    document.getElementById("readout").innerHTML =
+      `selected: RMSE <b>${Math.sqrt(se / N).toFixed(2)} ft</b> · ` +
+      `${sel.segs.length} segments · cost ${sel.cost.toFixed(1)} · ` +
+      `finalists ${finals.length} · best-finalist RMSE <b>${Math.sqrt(seo / N).toFixed(2)} ft</b>`;
+  }
+
+  for (const k of ["bw", "pw", "tw"]) ui[k].addEventListener("input", draw);
+  ui.nz.addEventListener("input", () => { remakeObs(); draw(); });
+  document.getElementById("reseed").addEventListener("click", () => { seed++; makeWorld(); draw(); });
+  const fbtn = document.getElementById("fin");
+  fbtn.addEventListener("click", () => {
+    showFin = !showFin;
+    fbtn.textContent = "finalists: " + (showFin ? "on" : "off");
+    draw();
+  });
+  if (window.matchMedia)
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", draw);
+  new MutationObserver(draw).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+  makeWorld(); draw();
+})();
+</script>
+
+</body>
+</html>

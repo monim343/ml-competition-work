@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Does This Model Help?</title>
+</head>
+<body>
+<div id="repobar"><a href="../index.html">&#8592; all documents</a><a href="https://github.com/monim343/ml-competition-work">source on GitHub</a></div>
+<style>
+#repobar{position:sticky;top:0;z-index:99;display:flex;justify-content:space-between;align-items:center;
+ gap:1rem;padding:.5rem 1rem;font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;
+ background:#16201f;color:#c9d3d0;border-bottom:1px solid #0b100f}
+#repobar a{color:#7fd3c4;text-decoration:none;font-weight:600}
+#repobar a:hover{text-decoration:underline}
+#repobar span{opacity:.65}
+@media print{#repobar{display:none}}
+</style>
+<title>Does This Model Help?</title>
+<style>
+:root{
+  --paper:#E9EBEC; --raised:#F3F5F5; --sunk:#E1E5E7; --ink:#18232E; --ink-2:#3A4A57; --muted:#66757F;
+  --rule:#C6CDD1; --hair:#D7DCDF;
+  --keep:#1F6E8C; --drop:#BF5B21; --good:#3E7A52;
+  --keep-soft:rgba(31,110,140,.12); --drop-soft:rgba(191,91,33,.12);
+  --serif:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",Palatino,serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --measure:68ch;
+}
+@media (prefers-color-scheme:dark){
+  :root{--paper:#131A21;--raised:#1A232B;--sunk:#0E141A;--ink:#DDE4E8;--ink-2:#AFBCC4;--muted:#7C8C96;
+        --rule:#2C3941;--hair:#243038;--keep:#4FA3C4;--drop:#E07A3C;--good:#5E9E72;
+        --keep-soft:rgba(79,163,196,.15);--drop-soft:rgba(224,122,60,.15);}
+}
+:root[data-theme="dark"]{--paper:#131A21;--raised:#1A232B;--sunk:#0E141A;--ink:#DDE4E8;--ink-2:#AFBCC4;
+        --muted:#7C8C96;--rule:#2C3941;--hair:#243038;--keep:#4FA3C4;--drop:#E07A3C;--good:#5E9E72;
+        --keep-soft:rgba(79,163,196,.15);--drop-soft:rgba(224,122,60,.15);}
+:root[data-theme="light"]{--paper:#E9EBEC;--raised:#F3F5F5;--sunk:#E1E5E7;--ink:#18232E;--ink-2:#3A4A57;
+        --muted:#66757F;--rule:#C6CDD1;--hair:#D7DCDF;--keep:#1F6E8C;--drop:#BF5B21;--good:#3E7A52;
+        --keep-soft:rgba(31,110,140,.12);--drop-soft:rgba(191,91,33,.12);}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--serif);
+     font-size:17px;line-height:1.62;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1160px;margin:0 auto;padding:0 20px 96px;display:grid;
+      grid-template-columns:118px minmax(0,1fr);gap:0}
+@media(max-width:900px){.wrap{grid-template-columns:1fr;padding:0 16px 72px}}
+.rail{position:relative;border-right:1px solid var(--hair);padding-top:76px}
+@media(max-width:900px){.rail{display:none}}
+.col{min-width:0;padding-left:36px}
+@media(max-width:900px){.col{padding-left:0}}
+.rl{position:absolute;right:14px;font-family:var(--mono);font-size:.6rem;letter-spacing:.09em;
+    color:var(--muted);text-align:right;transform:translateY(-.6em);white-space:nowrap}
+.rl.on{color:var(--keep)}
+h1{font-size:clamp(2rem,4.4vw,3rem);line-height:1.07;margin:0 0 .5rem;font-weight:600;
+   letter-spacing:-.017em;text-wrap:balance;max-width:17ch}
+h2{font-size:1.4rem;line-height:1.26;margin:0 0 .6rem;font-weight:600;letter-spacing:-.008em;text-wrap:balance}
+h3{font-size:1.02rem;margin:1.4rem 0 .35rem;font-weight:600}
+p{margin:0 0 1.05rem;max-width:var(--measure)}
+ul,ol{max-width:var(--measure);padding-left:1.15rem;margin:0 0 1.05rem}
+li{margin:.32rem 0}
+.lede{font-size:1.15rem;color:var(--ink-2);max-width:60ch}
+.eyebrow{font-family:var(--mono);font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;
+         color:var(--muted);margin:0 0 .55rem}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+header{padding:76px 0 34px;border-bottom:1px solid var(--rule)}
+section{padding:44px 0;border-bottom:1px solid var(--hair)}
+section:last-of-type{border-bottom:0}
+.eq{font-family:var(--mono);background:var(--raised);border:1px solid var(--hair);
+    border-left:2px solid var(--keep);padding:15px 18px;margin:0 0 1.05rem;font-size:.93rem;
+    overflow-x:auto;line-height:1.8}
+.eq .cm{color:var(--muted)} .eq b{color:var(--keep);font-weight:500} .eq i{color:var(--drop);font-style:normal}
+.big{font-family:var(--mono);font-size:1.06rem;text-align:center;padding:20px 12px;
+     background:var(--raised);border:1px solid var(--hair);border-radius:2px;margin:0 0 1.05rem;
+     overflow-x:auto}
+.big em{font-style:normal;color:var(--keep);font-weight:600}
+figure{margin:26px 0 22px}
+figcaption{font-family:var(--mono);font-size:.7rem;line-height:1.62;color:var(--muted);
+           margin-top:10px;max-width:80ch}
+figcaption b{color:var(--ink-2);font-weight:500}
+.plot{background:var(--raised);border:1px solid var(--hair);border-radius:2px;padding:14px 12px 6px;overflow-x:auto}
+svg{display:block;width:100%;height:auto;overflow:visible}
+.gridline{stroke:var(--hair);stroke-width:1}
+.axis{stroke:var(--rule);stroke-width:1}
+.axlab{font-family:var(--mono);font-size:9.5px;fill:var(--muted)}
+.ptlab{font-family:var(--mono);font-size:9.5px;font-weight:600}
+.legend{display:flex;gap:18px;flex-wrap:wrap;margin:0 0 10px;font-family:var(--mono);
+        font-size:.7rem;color:var(--ink-2)}
+.key{display:inline-flex;align-items:center;gap:7px}
+.dot{width:9px;height:9px;border-radius:50%;flex:none}
+.tw{overflow-x:auto;margin:0 0 1.05rem;border:1px solid var(--hair);border-radius:2px;background:var(--raised)}
+table{border-collapse:collapse;width:100%;font-family:var(--mono);font-size:.75rem;font-variant-numeric:tabular-nums}
+th,td{padding:8px 11px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--hair)}
+th:first-child,td:first-child{text-align:left}
+thead th{font-size:.63rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:500}
+tbody tr:last-child td{border-bottom:0}
+.keep{color:var(--keep)} .drop{color:var(--drop)} .ok{color:var(--good)}
+.note{border-left:2px solid var(--rule);padding:2px 0 2px 16px;margin:0 0 1.05rem;color:var(--ink-2);max-width:var(--measure)}
+.note .eyebrow{margin-bottom:.25rem}
+.warnbox{border:1px solid var(--drop);border-left-width:2px;background:var(--drop-soft);
+         padding:14px 16px;margin:0 0 1.05rem;max-width:var(--measure);border-radius:2px}
+.warnbox .eyebrow{color:var(--drop);margin-bottom:.3rem}
+.tt{position:absolute;pointer-events:none;background:var(--ink);color:var(--paper);font-family:var(--mono);
+    font-size:10.5px;line-height:1.55;padding:6px 8px;border-radius:2px;opacity:0;transition:opacity .1s;
+    white-space:pre;z-index:5}
+.figwrap{position:relative}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+:focus-visible{outline:2px solid var(--keep);outline-offset:2px}
+</style>
+
+<div class="wrap">
+<div class="rail" id="rail"></div>
+<div class="col">
+
+<header>
+  <p class="eyebrow">Ensembling &middot; a decision procedure and its failure modes</p>
+  <h1>Does this model help?</h1>
+  <p class="lede">For squared error there is an exact answer to &ldquo;should I add this model?&rdquo;, it takes two numbers, and it is not the number usually reached for. Then there are four ways it still misleads &mdash; including one that moves the score ten times more than the effects being chased.</p>
+<div class="note"><b>A note on scope.</b> This was written mid-competition, when the blend held <b>nine</b> members; the final submission has thirteen. Two things follow. The whole-well net here is the <i>original</i> architecture, which the cost-volume net later displaced &mdash; in the shipped pipeline it is still executed but carries weight zero. And every member is scored on the rows where <i>all</i> members of that nine-model set have a prediction, so changing the set changes the row intersection and with it every pooled number. That is why the standalone figures below do not match the final table in the solution reference: different rows, not different measurements. The numbers are left as they were measured; the reasoning is what carried forward.</div>
+</header>
+
+<section id="s1">
+  
+  <h2>Two numbers, one product</h2>
+  <p>You have a working blend and a new candidate. Write <span class="mono">e<sub>b</sub></span> for
+  the blend&rsquo;s error on each row and <span class="mono">e<sub>i</sub></span> for the
+  candidate&rsquo;s. Mix them at weight <span class="mono">w</span> and the mean squared error is:</p>
+  <div class="eq">V(w) = (1&minus;w)&sup2;<b>A</b> + 2w(1&minus;w)<b>B</b> + w&sup2;<b>C</b>
+   <span class="cm">A = E[e<sub>b</sub>&sup2;]   B = E[e<sub>i</sub>e<sub>b</sub>]   C = E[e<sub>i</sub>&sup2;]</span>
+
+dV/dw at w=0  =  2(<b>B</b> &minus; <b>A</b>)</div>
+  <p>So the candidate is worth a nonzero weight exactly when <span class="mono">B &lt; A</span>.
+  Substituting <span class="mono">B = &rho;&thinsp;&radic;(AC)</span> &mdash; where &rho; is the
+  correlation between the two error series &mdash; that condition becomes:</p>
+  <div class="big"><em>RMSE<sub>i</sub> &times; &rho;<sub>i</sub> &lt; RMSE<sub>blend</sub></em></div>
+  <p>Two properties, multiplied. Quality alone tells you nothing; correlation alone tells you
+  nothing. A model can be far worse than your blend and still be worth adding, provided it is wrong
+  in a sufficiently different way.</p>
+  <p class="note"><span class="eyebrow">Why this is exact, not a local approximation</span>
+  <span class="mono">V(w)</span> is a quadratic in <span class="mono">w</span> with leading
+  coefficient <span class="mono">A &minus; 2B + C = E[(e<sub>b</sub> &minus; e<sub>i</sub>)&sup2;]
+  &ge; 0</span>, so it is convex. If the derivative at zero is non-negative, <em>no</em> positive
+  weight helps &mdash; not just no small one. And if two candidates each fail, their average fails
+  too, since its gradient is the average of theirs. The test composes.</p>
+  <p>When it passes, the same algebra gives the best weight and the gain you should expect:</p>
+  <div class="eq">w* = (<b>A</b>&minus;<b>B</b>) / (<b>A</b>&minus;2<b>B</b>+<b>C</b>)      variance removed = (<b>A</b>&minus;<b>B</b>)&sup2; / (<b>A</b>&minus;2<b>B</b>+<b>C</b>)</div>
+  <div class="warnbox"><p class="eyebrow" style="margin:0 0 .3rem">One detail that silently breaks this</p>
+  <p style="margin:0">&rho; here is the <strong>uncentered</strong> cosine
+  <span class="mono">B/&radic;(AC)</span>, not Pearson correlation. They differ whenever the errors
+  have nonzero mean &mdash; which is precisely the case for a biased member. Reaching for
+  <span class="mono">np.corrcoef</span> here gives a number that looks right and answers a different
+  question.</p></div>
+</section>
+
+<section id="s2">
+  
+  <h2>The worst model was the most valuable one</h2>
+  <p>Two real members of the blend. They have almost the same standalone error,
+  and they are the two <em>worst</em> models we have. The screen sends them opposite ways.</p>
+  <div class="tw"><table>
+    <thead><tr><th>member</th><th>RMSE</th><th>&rho;</th><th>RMSE&times;&rho;</th><th>vs bar 7.1007</th><th>verdict</th></tr></thead>
+    <tbody>
+      <tr><td>original whole-well net</td><td>10.5443</td><td>0.6048</td><td class="keep">6.3775</td><td class="keep">&minus;0.723</td><td class="keep">add, w* = 0.072</td></tr>
+      <tr><td>beam search</td><td>10.4024</td><td>0.7296</td><td class="drop">7.5899</td><td class="drop">+0.489</td><td class="drop">reject, w* &lt; 0</td></tr>
+    </tbody>
+  </table></div>
+  <p>Two models within <span class="mono">0.14&nbsp;ft</span> of each other on quality, and one is
+  the single most valuable member in the ensemble while the other earns nothing. The entire
+  difference is &rho;. Sorting your candidates by accuracy would have ranked these two as
+  interchangeable.</p>
+  <p>Now the whole field. Every candidate we have measured, plotted as quality against correlation.
+  The curve is the decision boundary <span class="mono">RMSE &times; &rho; = 7.1007</span>: anything
+  below and left of it earns weight.</p>
+  <figure>
+    <div class="legend">
+      <span class="key"><span class="dot" style="background:var(--keep)"></span>passes the test</span>
+      <span class="key"><span class="dot" style="background:var(--drop)"></span>fails</span>
+      <span class="key" style="color:var(--muted)">curve = break-even</span>
+    </div>
+    <div class="plot figwrap"><svg id="fig1" viewBox="0 0 900 430" role="img"
+      aria-label="Scatter of candidate models by standalone RMSE against error correlation with the blend, divided by a break-even hyperbola. Models far below the curve are the most valuable despite having the worst standalone accuracy."></svg><div class="tt" id="tt1"></div></div>
+    <figcaption>Every real candidate against the break-even curve. Note the shape of the boundary:
+    it is a <b>hyperbola</b>, not a line. Near &rho; = 1 no amount of accuracy earns weight; near
+    &rho; = 0.6 a model can be <b>50% worse</b> than the blend and still be the best thing you can
+    add. Hover any point for that model&rsquo;s numbers.</figcaption>
+  </figure>
+</section>
+
+<section id="s3">
+  
+  <h2>Ten models at 95% correlation are worth 1.05 models</h2>
+  <p>Suppose you have <span class="mono">n</span> models of equal quality, each pair correlated
+  <span class="mono">&rho;</span>, and you simply average them. The variance of the average is
+  exactly:</p>
+  <div class="eq">Var(mean) / &sigma;&sup2;  =  [ 1 + (n&minus;1)&rho; ] / n     &rarr;  <b>&rho;</b>  as n &rarr; &infin;</div>
+  <p>Two consequences follow immediately, and they answer the question sharply.</p>
+  <p><strong>There is a floor, and it is &radic;&rho;.</strong> No number of models at 95%
+  correlation can beat <span class="mono">&radic;0.95 = 0.9747</span> &mdash; a 2.5% improvement,
+  ever, with infinite models. </p>
+  <p><strong>The effective count is <span class="mono">n / [1 + (n&minus;1)&rho;]</span>.</strong>
+  At <span class="mono">&rho; = 0.95</span> and <span class="mono">n = 10</span> that is
+  <strong>1.05</strong>. Your ten models have the variance-reducing power of one model and a
+  twentieth. The ceiling as <span class="mono">n &rarr; &infin;</span> is
+  <span class="mono">1/&rho; = 1.053</span>, so the eleventh, hundredth and thousandth model are
+  buying essentially nothing.</p>
+  <figure>
+    <div class="plot figwrap"><svg id="fig2" viewBox="0 0 900 320" role="img"
+      aria-label="Relative error of an n-model average against n, for correlations 0.5 through 0.99. Each curve flattens quickly onto a floor equal to the square root of the correlation."></svg><div class="tt" id="tt2"></div></div>
+    <figcaption>Error of an equal-weight average, relative to one model, against the number of
+    models. Each curve flattens onto its floor <b>&radic;&rho;</b> almost immediately. At
+    &rho; = 0.95 you capture four fifths of everything available with <b>two</b> models; the
+    remaining eight are decoration.</figcaption>
+  </figure>
+  <div class="tw"><table>
+    <thead><tr><th>&rho;</th><th>best possible gain</th><th>effective models, n&rarr;&infin;</th><th>gain at n=2</th><th>gain at n=10</th></tr></thead>
+    <tbody id="dimtbl"></tbody>
+  </table></div>
+  <h3>And that is the optimistic case</h3>
+  <p>All of the above assumes your models are <em>equally good</em>. Ours are not &mdash; they run
+  from <span class="mono">8.00</span> to <span class="mono">10.54&nbsp;ft</span>. Averaging unequal
+  models drags you toward the mean rather than the best. Two models at RMSE 7 and 10 with &rho; =
+  0.95, averaged equally, give <span class="mono">8.40</span> &mdash; <strong>worse than the better
+  model alone</strong>, and the test says so in advance:
+  <span class="mono">10 &times; 0.95 = 9.5 &gt; 7</span>.</p>
+  <p>Measured on this ensemble, nested: equal weights over nine members give
+  <span class="mono">7.4650</span>, a joint least-squares fit gives <span class="mono">7.3159</span>,
+  and weights built one member at a time give <span class="mono keep">7.1989</span>. Averaging was
+  the <em>worst</em> of the three, by a quarter of a foot.</p>
+  <p class="note"><span class="eyebrow">So when should you just average?</span>
+  When quality is genuinely homogeneous and you cannot estimate weights reliably. Equal weights have
+  one great virtue: <strong>zero estimation variance</strong>. They cannot overfit because nothing
+  was fitted. The moment your members differ substantially in quality, that virtue is outweighed.</p>
+</section>
+
+<section id="s4">
+  
+  <h2>Is five folds enough?</h2>
+  <p>For estimating the gain, usually yes. For the <em>gate we put in front of it</em>, no &mdash;
+  and this is where I think our practice has been weakest.</p>
+  <p>A common rule, mine included, is &ldquo;the improvement must appear in at least 4 of 5
+  folds.&rdquo; Treat the folds as coin flips under a null of no effect and that rule has a
+  false-positive rate of:</p>
+  <div class="tw"><table>
+    <thead><tr><th>rule</th><th>P(passing by chance)</th><th>reading</th></tr></thead>
+    <tbody>
+      <tr><td>&ge; 3 of 5</td><td class="drop">0.500</td><td>no filter at all</td></tr>
+      <tr><td>&ge; 4 of 5</td><td class="drop">0.188</td><td>roughly one in five</td></tr>
+      <tr><td>5 of 5</td><td class="ok">0.031</td><td>a real filter</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>Screen fifty candidates through a 4-of-5 gate and about nine will pass on noise
+  alone.</strong> That is not a hypothetical; it is a good description of a stretch of this project
+  where several things passed the gate and then died on closer examination. The fix is cheap: require
+  5 of 5, and treat 4 of 5 as &ldquo;interesting, not established.&rdquo;</p>
+  <h3>The subtler problem: what is n?</h3>
+  <p>We evaluate on <span class="mono">3,783,989</span> rows, which sounds like enormous statistical
+  power. It is not. Errors are strongly correlated <em>within</em> a well &mdash; a well with a bad
+  datum is wrong for thousands of consecutive rows. The effective sample size is closer to the
+  <strong>773 wells</strong> than to the 3.78 million rows. Confidence intervals computed on rows
+  are too narrow by something like a factor of seventy.</p>
+  <p>This is why every number in our procedure is grouped by well: the folds split wells, the
+  bootstrap resamples wells, the sign test counts well-groups. Any resampling that treats rows as
+  independent will tell you a coin flip is a certainty.</p>
+</section>
+
+<section id="s5">
+  
+  <h2>The gain you measure is not the gain you get</h2>
+  <p>Fitting <span class="mono">w*</span> on the same data you evaluate on is optimistic, and by
+  much more than intuition suggests. Below, every candidate&rsquo;s in-sample gain against its gain
+  when <span class="mono">w*</span> is fitted on four fifths of the wells and applied to the fifth it
+  never saw.</p>
+  <figure>
+    <div class="plot figwrap"><svg id="fig3" viewBox="0 0 900 330" role="img"
+      aria-label="In-sample gain against nested gain for each candidate. Almost every point sits far below the diagonal, and several candidates with positive in-sample gains have negative nested gains."></svg><div class="tt" id="tt3"></div></div>
+    <figcaption>Each candidate&rsquo;s in-sample gain (x) against its nested gain (y). The diagonal
+    is where honesty would put them. <b>Almost everything sits below it</b>, and the four GBM
+    candidates &mdash; all of which passed the in-sample screen &mdash; land in negative territory:
+    they make the blend <b>worse</b> when the weight is not fitted on the evaluation rows.</figcaption>
+  </figure>
+  <p>One diagnostic from that chart is worth internalising. A <em>retrained</em> copy of a model
+  already in the blend reliably looks admissible, because retraining decorrelates it from its own
+  earlier self. It is a new model by this test&rsquo;s standards and an old model in every way that
+  matters, and it dies under nesting every time.</p>
+</section>
+
+<section id="s6">
+  
+  <h2>Build order changes the answer by more than the effects being measured</h2>
+  <p>Does adding models in a different order give a different result? It does.
+  I ran the greedy procedure &mdash; start from one member, test each remaining candidate against the
+  current blend, accept it if it passes, move on &mdash; over <strong>300 random orderings</strong>
+  of the same nine members.</p>
+  <figure>
+    <div class="plot figwrap"><svg id="fig4" viewBox="0 0 900 300" role="img"
+      aria-label="Histogram of final blend error across 300 random orderings of the same nine members, spanning 7.065 to 7.223, with the typical effect size we chase marked as a much smaller interval."></svg><div class="tt" id="tt4"></div></div>
+    <figcaption>Final pooled error from 300 random build orders of the <b>same nine members</b>.
+    Range <b>7.0653 to 7.2229</b> &mdash; a spread of <b>0.158&nbsp;ft</b> &mdash; and
+    <b>18 distinct final member sets</b>. The bar beneath shows the size of the effects we normally
+    argue about, for scale.</figcaption>
+  </figure>
+  <div class="warnbox"><p class="eyebrow" style="margin:0 0 .3rem">The number that should worry you</p>
+  <p style="margin:0">The spread caused purely by <em>build order</em> is
+  <span class="mono">0.158&nbsp;ft</span>. The effects we spend weeks arguing about are
+  <span class="mono">0.015&nbsp;ft</span>. <strong>Order dependence is ten times larger than the
+  signal.</strong> A greedy ensemble score is not a property of the members; it is a property of the
+  members <em>and the sequence</em>, and we have been reporting it as though only the first mattered.</p></div>
+  <p>Which member you happen to start with matters systematically, not just randomly:</p>
+  <div class="tw"><table>
+    <thead><tr><th>started from</th><th>mean final error</th><th>orders</th></tr></thead>
+    <tbody id="firsttbl"></tbody>
+  </table></div>
+  <p>Starting from the <span class="mono">averaged-GR re-decode</span> ends up <span class="mono">0.07&nbsp;ft</span>
+  better on average than starting from <span class="mono">warp</span> &mdash; five times the size of
+  a result we would celebrate. The mechanism is simple: two correlated candidates both pass on their
+  own, but whichever arrives first absorbs the shared gain and makes the second look worthless. The test is honest at every individual step and path-dependent overall.</p>
+  <h3>What to do about it</h3>
+  <ul>
+    <li><strong>Report the spread, not a point.</strong> Run many orders; quote the distribution.
+    A single greedy run is one sample from that histogram.</li>
+    <li><strong>Bag the selection.</strong> This is Caruana&rsquo;s own prescription and we have not
+    been following it: repeat greedy selection over bootstrap resamples and average the resulting
+    weights. It converts order-dependence from a bias into variance you can average down.</li>
+    <li><strong>Prefer the stable core.</strong> Members that appear in nearly every ordering are
+    real; members that appear in a third are artifacts of a path.</li>
+  </ul>
+</section>
+
+<section id="s7">
+  
+  <h2>Three more, briefly</h2>
+  <h3>The test is measured on one distribution and used on another</h3>
+  <p>Both <span class="mono">RMSE<sub>i</sub></span> and <span class="mono">&rho;<sub>i</sub></span>
+  are computed on held-out training wells. They are deployed on hidden wells drawn differently. In
+  this competition the rank correlation between our validation score and the leaderboard is about
+  <span class="mono">0.14</span> &mdash; so a test that is exactly right about the training
+  distribution can still be wrong about the one that counts. This is an argument for preferring
+  mechanisms with a physical justification over ones with only a statistical one.</p>
+  <h3>Pooled error hides who is being helped</h3>
+  <p>Pooled row RMSE weights long wells more heavily than short ones. A member that rescues a few
+  catastrophic wells and a member that shaves a little off every well can post identical gains and
+  be completely different propositions. Always look at where the gain lives, not just its size.</p>
+  <h3>The criterion answers a narrower question than the one you have</h3>
+  <p>&ldquo;Should I add this to that fixed blend?&rdquo; is exactly answered. &ldquo;What is the
+  best ensemble from this pool?&rdquo; is not &mdash; that is a search problem, and section&nbsp;6 is
+  what its landscape looks like. Nor does it cover <em>replacing</em> a member, or re-weighting the
+  ones already present.</p>
+</section>
+
+<section id="s8">
+  
+  <h2>Follow this, with two amendments</h2>
+  <p>What I would defend, in order:</p>
+  <ol>
+    <li><strong>Test on the product, never on accuracy alone.</strong> It is free, it is exact for
+    squared loss, and it correctly identified our worst standalone model as our most valuable
+    member.</li>
+    <li><strong>Nest before believing any gain.</strong> The optimism is routinely larger than the
+    effect.</li>
+    <li><strong>Group everything by well.</strong> Rows are not independent observations.</li>
+    <li><strong>Run a scrambled control.</strong> Feed the mechanism deliberately wrong data. If it
+    still helps, you found variance reduction and dressed it as insight.</li>
+  </ol>
+  <p>Two things I would change:</p>
+  <ul>
+    <li><strong>Retire the 4-of-5 gate in favour of 5-of-5.</strong> At 19% false positives, the old
+    gate admits roughly one candidate in five from pure noise, and we screened many.</li>
+    <li><strong>Stop quoting single-order greedy scores.</strong> Report the distribution over
+    orders, and bag the selection. An 0.158&nbsp;ft path effect makes a bare 0.015&nbsp;ft claim
+    uninterpretable.</li>
+  </ul>
+  <p class="note"><span class="eyebrow">Where this framework does not apply at all</span>
+  It is derived for squared error and linear combination. If you are optimising a different loss, or
+  combining non-linearly &mdash; a stacker that takes features as well as predictions, or anything
+  gated on inputs &mdash; the algebra above does not hold and its conclusions do not transfer.
+  Re-derive rather than reuse.</p>
+</section>
+
+</div></div>
+
+<script>
+const D = {"blend_rmse":7.1007,"candidates":[{"name":"maek","rmse":8.0003,"rho":0.8876,"prod":7.1012,"w":-0.0003,"gain_in":0.0,"gain_nested":-0.017,"signs":0,"admissible":false},{"name":"st_heavy","rmse":10.4024,"rho":0.7296,"prod":7.5899,"w":-0.0683,"gain_in":0.0167,"gain_nested":-0.0,"signs":0,"admissible":false},{"name":"warp","rmse":10.5443,"rho":0.6048,"prod":6.3775,"w":0.0723,"gain_in":0.0262,"gain_nested":0.0078,"signs":4,"admissible":true},{"name":"r_dp","rmse":9.0961,"rho":0.8052,"prod":7.3239,"w":-0.0544,"gain_in":0.0061,"gain_nested":-0.0014,"signs":0,"admissible":false},{"name":"r_vw","rmse":8.728,"rho":0.791,"prod":6.9037,"w":0.049,"gain_in":0.0048,"gain_nested":-0.0049,"signs":3,"admissible":true},{"name":"r_cau","rmse":9.8935,"rho":0.7208,"prod":7.131,"w":-0.0046,"gain_in":0.0001,"gain_nested":-0.0042,"signs":0,"admissible":false},{"name":"p2r","rmse":10.4613,"rho":0.7005,"prod":7.3283,"w":-0.029,"gain_in":0.0033,"gain_nested":-0.0191,"signs":0,"admissible":false},{"name":"r_wlvl","rmse":9.2555,"rho":0.7671,"prod":7.1002,"w":0.0001,"gain_in":0.0,"gain_nested":-0.0063,"signs":0,"admissible":true},{"name":"r_wmix","rmse":10.2465,"rho":0.7119,"prod":7.294,"w":-0.0265,"gain_in":0.0026,"gain_nested":-0.0019,"signs":0,"admissible":false},{"name":"gbm_maek","rmse":8.0825,"rho":0.8521,"prod":6.8873,"w":0.0845,"gain_in":0.009,"gain_nested":-0.0296,"signs":1,"admissible":true},{"name":"gbm_lgb_wide","rmse":8.0646,"rho":0.8484,"prod":6.8418,"w":0.1005,"gain_in":0.013,"gain_nested":-0.0329,"signs":1,"admissible":true},{"name":"gbm_lgb_rf","rmse":8.3331,"rho":0.8387,"prod":6.9888,"w":0.0386,"gain_in":0.0022,"gain_nested":-0.0209,"signs":1,"admissible":true},{"name":"gbm_xgb_slow","rmse":8.0763,"rho":0.853,"prod":6.8887,"w":0.0845,"gain_in":0.009,"gain_nested":-0.0271,"signs":1,"admissible":true}],"dim":[{"rho":0.5,"floor":0.7071,"neff_max":2.0,"pts":[{"n":1,"rel":1.0,"neff":1.0},{"n":2,"rel":0.866,"neff":1.333},{"n":3,"rel":0.8165,"neff":1.5},{"n":4,"rel":0.7906,"neff":1.6},{"n":5,"rel":0.7746,"neff":1.667},{"n":6,"rel":0.7638,"neff":1.714},{"n":7,"rel":0.7559,"neff":1.75},{"n":8,"rel":0.75,"neff":1.778},{"n":9,"rel":0.7454,"neff":1.8},{"n":10,"rel":0.7416,"neff":1.818},{"n":11,"rel":0.7385,"neff":1.833},{"n":12,"rel":0.736,"neff":1.846},{"n":13,"rel":0.7338,"neff":1.857},{"n":14,"rel":0.7319,"neff":1.867},{"n":15,"rel":0.7303,"neff":1.875},{"n":16,"rel":0.7289,"neff":1.882},{"n":17,"rel":0.7276,"neff":1.889},{"n":18,"rel":0.7265,"neff":1.895},{"n":19,"rel":0.7255,"neff":1.9},{"n":20,"rel":0.7246,"neff":1.905}]},{"rho":0.8,"floor":0.8944,"neff_max":1.25,"pts":[{"n":1,"rel":1.0,"neff":1.0},{"n":2,"rel":0.9487,"neff":1.111},{"n":3,"rel":0.9309,"neff":1.154},{"n":4,"rel":0.922,"neff":1.176},{"n":5,"rel":0.9165,"neff":1.19},{"n":6,"rel":0.9129,"neff":1.2},{"n":7,"rel":0.9103,"neff":1.207},{"n":8,"rel":0.9083,"neff":1.212},{"n":9,"rel":0.9068,"neff":1.216},{"n":10,"rel":0.9055,"neff":1.22},{"n":11,"rel":0.9045,"neff":1.222},{"n":12,"rel":0.9037,"neff":1.224},{"n":13,"rel":0.903,"neff":1.226},{"n":14,"rel":0.9024,"neff":1.228},{"n":15,"rel":0.9018,"neff":1.23},{"n":16,"rel":0.9014,"neff":1.231},{"n":17,"rel":0.901,"neff":1.232},{"n":18,"rel":0.9006,"neff":1.233},{"n":19,"rel":0.9003,"neff":1.234},{"n":20,"rel":0.9,"neff":1.235}]},{"rho":0.9,"floor":0.9487,"neff_max":1.111,"pts":[{"n":1,"rel":1.0,"neff":1.0},{"n":2,"rel":0.9747,"neff":1.053},{"n":3,"rel":0.9661,"neff":1.071},{"n":4,"rel":0.9618,"neff":1.081},{"n":5,"rel":0.9592,"neff":1.087},{"n":6,"rel":0.9574,"neff":1.091},{"n":7,"rel":0.9562,"neff":1.094},{"n":8,"rel":0.9552,"neff":1.096},{"n":9,"rel":0.9545,"neff":1.098},{"n":10,"rel":0.9539,"neff":1.099},{"n":11,"rel":0.9535,"neff":1.1},{"n":12,"rel":0.9531,"neff":1.101},{"n":13,"rel":0.9527,"neff":1.102},{"n":14,"rel":0.9524,"neff":1.102},{"n":15,"rel":0.9522,"neff":1.103},{"n":16,"rel":0.952,"neff":1.103},{"n":17,"rel":0.9518,"neff":1.104},{"n":18,"rel":0.9516,"neff":1.104},{"n":19,"rel":0.9515,"neff":1.105},{"n":20,"rel":0.9513,"neff":1.105}]},{"rho":0.95,"floor":0.9747,"neff_max":1.053,"pts":[{"n":1,"rel":1.0,"neff":1.0},{"n":2,"rel":0.9874,"neff":1.026},{"n":3,"rel":0.9832,"neff":1.034},{"n":4,"rel":0.9811,"neff":1.039},{"n":5,"rel":0.9798,"neff":1.042},{"n":6,"rel":0.9789,"neff":1.043},{"n":7,"rel":0.9783,"neff":1.045},{"n":8,"rel":0.9779,"neff":1.046},{"n":9,"rel":0.9775,"neff":1.047},{"n":10,"rel":0.9772,"neff":1.047},{"n":11,"rel":0.977,"neff":1.048},{"n":12,"rel":0.9768,"neff":1.048},{"n":13,"rel":0.9767,"neff":1.048},{"n":14,"rel":0.9765,"neff":1.049},{"n":15,"rel":0.9764,"neff":1.049},{"n":16,"rel":0.9763,"neff":1.049},{"n":17,"rel":0.9762,"neff":1.049},{"n":18,"rel":0.9761,"neff":1.05},{"n":19,"rel":0.976,"neff":1.05},{"n":20,"rel":0.976,"neff":1.05}]},{"rho":0.99,"floor":0.995,"neff_max":1.01,"pts":[{"n":1,"rel":1.0,"neff":1.0},{"n":2,"rel":0.9975,"neff":1.005},{"n":3,"rel":0.9967,"neff":1.007},{"n":4,"rel":0.9962,"neff":1.008},{"n":5,"rel":0.996,"neff":1.008},{"n":6,"rel":0.9958,"neff":1.008},{"n":7,"rel":0.9957,"neff":1.009},{"n":8,"rel":0.9956,"neff":1.009},{"n":9,"rel":0.9955,"neff":1.009},{"n":10,"rel":0.9955,"neff":1.009},{"n":11,"rel":0.9954,"neff":1.009},{"n":12,"rel":0.9954,"neff":1.009},{"n":13,"rel":0.9954,"neff":1.009},{"n":14,"rel":0.9953,"neff":1.009},{"n":15,"rel":0.9953,"neff":1.009},{"n":16,"rel":0.9953,"neff":1.009},{"n":17,"rel":0.9953,"neff":1.01},{"n":18,"rel":0.9953,"neff":1.01},{"n":19,"rel":0.9953,"neff":1.01},{"n":20,"rel":0.9952,"neff":1.01}]}],"order":{"rmse":[7.1543,7.2049,7.1921,7.1939,7.0964,7.1339,7.1208,7.0882,7.1111,7.1559,7.0728,7.1004,7.0672,7.1746,7.1318,7.1187,7.15,7.1772,7.0991,7.1548,7.1384,7.1236,7.0868,7.0837,7.1015,7.1545,7.0893,7.0689,7.1833,7.1078,7.0729,7.1749,7.1738,7.1194,7.088,7.076,7.1579,7.1048,7.1028,7.1052,7.123,7.1271,7.1454,7.2229,7.1718,7.078,7.1355,7.1927,7.1199,7.0933,7.1329,7.1294,7.1078,7.1254,7.1235,7.1849,7.0865,7.1497,7.0935,7.1397,7.1055,7.1033,7.1744,7.0865,7.1065,7.1625,7.1198,7.1311,7.0877,7.0754,7.1536,7.1701,7.1144,7.1106,7.1267,7.0941,7.0815,7.126,7.1153,7.2081,7.1485,7.0677,7.0812,7.1787,7.102,7.1385,7.1882,7.0785,7.1374,7.1305,7.1554,7.0895,7.0684,7.1251,7.0984,7.0945,7.0975,7.097,7.1691,7.1492,7.1748,7.071,7.1142,7.1278,7.1111,7.1351,7.1668,7.1413,7.2009,7.2041,7.0765,7.0906,7.1194,7.0859,7.1811,7.0975,7.1425,7.1116,7.1794,7.1903,7.1001,7.19,7.1601,7.0777,7.1006,7.193,7.1513,7.1036,7.103,7.1094,7.1566,7.0817,7.149,7.1716,7.1176,7.0831,7.1625,7.1442,7.0905,7.0864,7.1824,7.1092,7.0768,7.1221,7.117,7.1541,7.1065,7.1678,7.0907,7.1513,7.0951,7.1407,7.1002,7.0919,7.1071,7.0773,7.0852,7.0682,7.0961,7.1713,7.1908,7.1553,7.0837,7.1322,7.109,7.0862,7.102,7.1164,7.1123,7.0947,7.1227,7.0897,7.088,7.1213,7.0774,7.0801,7.1055,7.0896,7.1917,7.1174,7.1997,7.1232,7.1019,7.1282,7.187,7.1756,7.0653,7.1651,7.0945,7.1674,7.0781,7.0751,7.0812,7.0763,7.0955,7.1226,7.1244,7.0829,7.124,7.1574,7.0872,7.1047,7.154,7.1376,7.1635,7.0797,7.1643,7.113,7.1426,7.1073,7.0858,7.1777,7.1074,7.1205,7.1641,7.1638,7.1316,7.1499,7.1002,7.2002,7.1251,7.092,7.1505,7.0961,7.1035,7.0974,7.1145,7.08,7.1937,7.0936,7.0814,7.1404,7.0758,7.1156,7.0805,7.0755,7.19,7.1079,7.0829,7.2183,7.0702,7.1255,7.1526,7.1067,7.1081,7.1347,7.1286,7.1228,7.0733,7.0678,7.1023,7.0761,7.1611,7.1651,7.0808,7.1408,7.1309,7.1,7.0947,7.1749,7.1047,7.084,7.1452,7.1701,7.1118,7.1151,7.0723,7.1262,7.0784,7.1277,7.1653,7.0667,7.0947,7.0901,7.1013,7.1508,7.1202,7.1148,7.1326,7.1478,7.08,7.0912,7.099,7.1346,7.1142,7.1925,7.1224,7.0688,7.1916,7.1124,7.0914,7.1236,7.1167,7.1411,7.0927,7.0763,7.0906,7.0839,7.1114,7.0879],"min":7.0653,"max":7.2229,"mean":7.1221,"std":0.0368,"n_sets":18,"k_hist":{"1":0,"2":0,"3":0,"4":0,"5":0,"6":8,"7":46,"8":151,"9":95},"first":[{"first":"r_vw","mean":7.0986,"n":35},{"first":"st_heavy","mean":7.1025,"n":37},{"first":"maek","mean":7.1025,"n":34},{"first":"r_wlvl","mean":7.1181,"n":37},{"first":"p2r","mean":7.1191,"n":27},{"first":"r_wmix","mean":7.1268,"n":35},{"first":"r_cau","mean":7.1333,"n":29},{"first":"r_dp","mean":7.1363,"n":36},{"first":"warp","mean":7.1702,"n":30}]},"sign_null":[{"k":3,"p_at_least":0.5},{"k":4,"p_at_least":0.1875},{"k":5,"p_at_least":0.0312}],"nwells":773,"nrows":3783989};
+
+const PRETTY={maek:'gradient-boosted trees',st_heavy:'beam search',warp:'original whole-well net',
+ p2r:'beam search, trend override',r_dp:'re-decode, pointwise',r_vw:'re-decode, averaged GR',
+ r_cau:'re-decode, heavy-tailed',r_wlvl:'re-decode, windowed amplitude',r_wmix:'re-decode, shape + amplitude',
+ gbm_maek:'boosted retrain A',gbm_lgb_wide:'boosted retrain B',gbm_lgb_rf:'boosted retrain C',
+ gbm_xgb_slow:'boosted retrain D'};
+const P=n=>PRETTY[n]||n;
+const SHORT={warp:'original net',st_heavy:'beam search',maek:'trees',r_vw:'re-decode',gbm_lgb_wide:'boosted retrain',p2r:'beam, trend'};
+const S=n=>SHORT[n]||PRETTY[n]||n;
+const NS='http://www.w3.org/2000/svg';
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+function el(n,a){const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);return e;}
+function txt(p,s,a){const t=el('text',a);t.textContent=s;p.appendChild(t);return t;}
+const lin=(d0,d1,r0,r1)=>v=>r0+(v-d0)/(d1-d0||1)*(r1-r0);
+function tip(id,s,fn){
+  const tt=document.getElementById(id);
+  s.addEventListener('pointermove',ev=>{const b=s.getBoundingClientRect();
+    const r=fn(ev,b); if(!r){tt.style.opacity=0;return;}
+    tt.textContent=r; tt.style.opacity=1;
+    tt.style.left=Math.min(b.width-150,Math.max(0,ev.clientX-b.left+12))+'px';
+    tt.style.top=(ev.clientY-b.top+12)+'px';});
+  s.addEventListener('pointerleave',()=>{tt.style.opacity=0;});
+}
+
+/* fig1 — admissibility plane */
+function fig1(){
+  const s=document.getElementById('fig1'); s.innerHTML='';
+  const W=900,H=430,L=64,R=150,TOP=18,B=52, bar=D.blend_rmse;
+  const C=D.candidates;
+  const x=lin(0.55,0.92,L,W-R), y=lin(7.6,11.0,H-B,TOP);
+  for(let v=8;v<=11;v++){s.appendChild(el('line',{x1:L,x2:W-R,y1:y(v),y2:y(v),class:'gridline'}));
+    txt(s,v.toFixed(0),{x:L-8,y:y(v)+3,class:'axlab','text-anchor':'end'});}
+  txt(s,'standalone RMSE (ft)',{x:L-8,y:TOP-4,class:'axlab','text-anchor':'end'});
+  for(let v=0.6;v<=0.9001;v+=0.05){s.appendChild(el('line',{x1:x(v),x2:x(v),y1:H-B,y2:H-B+4,class:'axis'}));
+    txt(s,v.toFixed(2),{x:x(v),y:H-B+15,class:'axlab','text-anchor':'middle'});}
+  s.appendChild(el('line',{x1:L,x2:W-R,y1:H-B,y2:H-B,class:'axis'}));
+  txt(s,'ρ  — correlation of this model’s errors with the blend’s',{x:(L+W-R)/2,y:H-14,class:'axlab','text-anchor':'middle'});
+  // break-even hyperbola RMSE = bar/rho  + shading
+  const pts=[]; for(let r=0.55;r<=0.921;r+=0.004) pts.push([r,bar/r]);
+  const dpath=pts.map((p,i)=>(i?'L':'M')+x(p[0]).toFixed(1)+' '+y(p[1]).toFixed(1)).join('');
+  s.appendChild(el('path',{d:dpath+`L ${x(0.92)} ${y(7.6)} L ${x(0.55)} ${y(7.6)} Z`,
+    fill:css('--keep'),opacity:.07}));
+  s.appendChild(el('path',{d:dpath,fill:'none',stroke:css('--muted'),'stroke-width':2,'stroke-dasharray':'6 4'}));
+  txt(s,'break-even:  RMSE × ρ = '+bar.toFixed(3),{x:x(0.61),y:y(bar/0.61)-9,class:'ptlab',fill:css('--muted')});
+  txt(s,'earns weight',{x:x(0.60),y:y(8.3),class:'ptlab',fill:css('--keep')});
+  const shown=C.filter(c=>c.rho>=0.55&&c.rho<=0.92&&c.rmse>=7.6&&c.rmse<=11);
+  shown.forEach(c=>{
+    const good=c.admissible;
+    s.appendChild(el('circle',{cx:x(c.rho),cy:y(c.rmse),r:5.5,
+      fill:good?css('--keep'):css('--drop'),stroke:css('--raised'),'stroke-width':2}));
+  });
+  // labels for the teaching cases only
+  const lab={'warp':[10,-9],'st_heavy':[10,14],'maek':[10,4],'r_vw':[10,4],'gbm_lgb_wide':[10,-8],'p2r':[-10,4]};
+  shown.forEach(c=>{ if(!(c.name in lab)) return; const [dx,dy]=lab[c.name];
+    txt(s,S(c.name),{x:x(c.rho)+dx,y:y(c.rmse)+dy,class:'ptlab',
+      fill:c.admissible?css('--keep'):css('--drop'),'text-anchor':dx<0?'end':'start'});});
+  tip('tt1',s,(ev,b)=>{const px=(ev.clientX-b.left)/b.width*W, py=(ev.clientY-b.top)/b.height*H;
+    let best=null,bd=18;
+    shown.forEach(c=>{const d=Math.hypot(x(c.rho)-px,y(c.rmse)-py); if(d<bd){bd=d;best=c;}});
+    return best? P(best.name)+'\nRMSE   '+best.rmse.toFixed(4)+'\nρ      '+best.rho.toFixed(4)+
+      '\nproduct '+best.prod.toFixed(4)+'\nw*     '+best.w.toFixed(3)+
+      '\nnested '+(best.gain_nested>=0?'+':'')+best.gain_nested.toFixed(4)+'  '+best.signs+'/5' : null;});
+}
+
+/* fig2 — diminishing returns */
+function fig2(){
+  const s=document.getElementById('fig2'); s.innerHTML='';
+  const W=900,H=320,L=64,R=120,TOP=18,B=52;
+  const x=lin(1,20,L,W-R), y=lin(0.65,1.005,H-B,TOP);
+  [0.7,0.8,0.9,1.0].forEach(v=>{s.appendChild(el('line',{x1:L,x2:W-R,y1:y(v),y2:y(v),class:'gridline'}));
+    txt(s,v.toFixed(1),{x:L-8,y:y(v)+3,class:'axlab','text-anchor':'end'});});
+  txt(s,'error, relative to one model',{x:L-8,y:TOP-4,class:'axlab','text-anchor':'end'});
+  [1,5,10,15,20].forEach(v=>{s.appendChild(el('line',{x1:x(v),x2:x(v),y1:H-B,y2:H-B+4,class:'axis'}));
+    txt(s,v,{x:x(v),y:H-B+15,class:'axlab','text-anchor':'middle'});});
+  s.appendChild(el('line',{x1:L,x2:W-R,y1:H-B,y2:H-B,class:'axis'}));
+  txt(s,'number of models averaged',{x:(L+W-R)/2,y:H-14,class:'axlab','text-anchor':'middle'});
+  const cols=[css('--keep'),css('--good'),css('--muted'),css('--drop'),css('--ink-2')];
+  D.dim.forEach((g,i)=>{
+    const d=g.pts.map((p,j)=>(j?'L':'M')+x(p.n).toFixed(1)+' '+y(p.rel).toFixed(1)).join('');
+    s.appendChild(el('path',{d:d,fill:'none',stroke:cols[i],'stroke-width':2.4,'stroke-linejoin':'round'}));
+    s.appendChild(el('line',{x1:x(1),x2:x(20),y1:y(g.floor),y2:y(g.floor),stroke:cols[i],
+      'stroke-width':1,'stroke-dasharray':'3 4',opacity:.6}));
+    txt(s,'ρ='+g.rho+'   floor '+g.floor.toFixed(3),
+      {x:W-R+8,y:y(g.pts[19].rel)+3.5,class:'ptlab',fill:cols[i]});
+  });
+  tip('tt2',s,(ev,b)=>{const px=(ev.clientX-b.left)/b.width*W;
+    const n=Math.round(Math.max(1,Math.min(20,(px-L)/(x(2)-x(1))+1)));
+    return 'n = '+n+'\n'+D.dim.map(g=>'ρ='+g.rho+'  ×'+g.pts[n-1].rel.toFixed(3)+
+      '   n_eff '+g.pts[n-1].neff.toFixed(2)).join('\n');});
+}
+
+/* fig3 — optimism */
+function fig3(){
+  const s=document.getElementById('fig3'); s.innerHTML='';
+  const W=900,H=330,L=72,R=120,TOP=18,B=54;
+  const C=D.candidates;
+  const xs=C.map(c=>c.gain_in), ys=C.map(c=>c.gain_nested);
+  const lo=Math.min(...xs,...ys)-.004, hi=Math.max(...xs,...ys)+.004;
+  const x=lin(lo,hi,L,W-R), y=lin(lo,hi,H-B,TOP);
+  [0].concat([-0.03,-0.02,-0.01,0.01,0.02]).forEach(v=>{ if(v<lo||v>hi) return;
+    s.appendChild(el('line',{x1:L,x2:W-R,y1:y(v),y2:y(v),class:'gridline'}));
+    txt(s,v.toFixed(2),{x:L-8,y:y(v)+3,class:'axlab','text-anchor':'end'});
+    s.appendChild(el('line',{x1:x(v),x2:x(v),y1:H-B,y2:H-B+4,class:'axis'}));
+    txt(s,v.toFixed(2),{x:x(v),y:H-B+15,class:'axlab','text-anchor':'middle'});});
+  s.appendChild(el('rect',{x:L,y:y(hi),width:(W-R)-L,height:y(0)-y(hi),fill:css('--keep'),opacity:.05}));
+  s.appendChild(el('rect',{x:L,y:y(0),width:(W-R)-L,height:(H-B)-y(0),fill:css('--drop'),opacity:.06}));
+  s.appendChild(el('line',{x1:x(lo),x2:x(hi),y1:y(lo),y2:y(hi),stroke:css('--muted'),
+    'stroke-width':1.5,'stroke-dasharray':'5 4'}));
+  txt(s,'honest line',{x:x(hi)-4,y:y(hi)+13,class:'ptlab',fill:css('--muted'),'text-anchor':'end'});
+  s.appendChild(el('line',{x1:L,x2:W-R,y1:y(0),y2:y(0),class:'axis'}));
+  txt(s,'in-sample gain (ft)',{x:(L+W-R)/2,y:H-14,class:'axlab','text-anchor':'middle'});
+  txt(s,'nested gain (ft)',{x:L-8,y:TOP-4,class:'axlab','text-anchor':'end'});
+  txt(s,'helps',{x:W-R+8,y:y(hi)+16,class:'ptlab',fill:css('--keep')});
+  txt(s,'hurts',{x:W-R+8,y:(H-B)-8,class:'ptlab',fill:css('--drop')});
+  C.forEach(c=>{const g=c.name.startsWith('gbm_');
+    s.appendChild(el('circle',{cx:x(c.gain_in),cy:y(c.gain_nested),r:g?6:5,
+      fill:c.gain_nested>0?css('--keep'):css('--drop'),
+      stroke:css('--raised'),'stroke-width':2, opacity:g?1:.85}));});
+  ['warp','gbm_lgb_wide','maek','p2r'].forEach(n=>{const c=C.find(q=>q.name===n); if(!c) return;
+    txt(s,n,{x:x(c.gain_in)+9,y:y(c.gain_nested)+3.5,class:'ptlab',
+      fill:c.gain_nested>0?css('--keep'):css('--drop')});});
+  tip('tt3',s,(ev,b)=>{const px=(ev.clientX-b.left)/b.width*W, py=(ev.clientY-b.top)/b.height*H;
+    let best=null,bd=18; C.forEach(c=>{const d=Math.hypot(x(c.gain_in)-px,y(c.gain_nested)-py);
+      if(d<bd){bd=d;best=c;}});
+    return best? P(best.name)+'\nin-sample '+(best.gain_in>=0?'+':'')+best.gain_in.toFixed(4)+
+      '\nnested    '+(best.gain_nested>=0?'+':'')+best.gain_nested.toFixed(4)+
+      '\nsigns     '+best.signs+'/5' : null;});
+}
+
+/* fig4 — order dependence */
+function fig4(){
+  const s=document.getElementById('fig4'); s.innerHTML='';
+  const W=900,H=300,L=64,R=20,TOP=20,B=76;
+  const v=D.order.rmse, lo=Math.min(...v), hi=Math.max(...v);
+  const nb=32, ed=[]; for(let i=0;i<=nb;i++) ed.push(lo+(hi-lo)*i/nb);
+  const cnt=new Array(nb).fill(0);
+  v.forEach(q=>{let i=Math.min(nb-1,Math.floor((q-lo)/(hi-lo)*nb)); cnt[i]++;});
+  const x=lin(lo,hi,L,W-R), y=lin(0,Math.max(...cnt)*1.15,H-B,TOP);
+  [0,Math.round(Math.max(...cnt)/2),Math.max(...cnt)].forEach(q=>{
+    s.appendChild(el('line',{x1:L,x2:W-R,y1:y(q),y2:y(q),class:'gridline'}));
+    txt(s,q,{x:L-8,y:y(q)+3,class:'axlab','text-anchor':'end'});});
+  txt(s,'orderings',{x:L-8,y:TOP-4,class:'axlab','text-anchor':'end'});
+  const bw=x(ed[1])-x(ed[0]);
+  cnt.forEach((c,i)=>{if(!c)return;
+    s.appendChild(el('rect',{x:x(ed[i])+1,y:y(c),width:Math.max(1,bw-2),height:(H-B)-y(c),
+      fill:css('--keep'),opacity:.8,rx:2}));});
+  const yb=H-B;
+  s.appendChild(el('line',{x1:L,x2:W-R,y1:yb,y2:yb,class:'axis'}));
+  for(let i=0;i<=4;i++){const q=lo+(hi-lo)*i/4;
+    s.appendChild(el('line',{x1:x(q),x2:x(q),y1:yb,y2:yb+4,class:'axis'}));
+    txt(s,q.toFixed(3),{x:x(q),y:yb+15,class:'axlab','text-anchor':'middle'});}
+  txt(s,'final pooled error of the greedy blend (ft)',{x:(L+W-R)/2,y:yb+29,class:'axlab','text-anchor':'middle'});
+  // scale bar: the effect size we normally argue about
+  const c0=(lo+hi)/2, eff=0.015;
+  const ys=yb+44;
+  s.appendChild(el('line',{x1:x(lo),x2:x(hi),y1:ys,y2:ys,stroke:css('--muted'),'stroke-width':2}));
+  s.appendChild(el('line',{x1:x(c0-eff/2),x2:x(c0+eff/2),y1:ys,y2:ys,stroke:css('--drop'),'stroke-width':7,'stroke-linecap':'round'}));
+  txt(s,'spread from build order alone: 0.158 ft',{x:x(lo),y:ys-8,class:'ptlab',fill:css('--muted')});
+  txt(s,'← a typical result we argue about: 0.015 ft',{x:x(c0+eff/2)+10,y:ys+4,class:'ptlab',fill:css('--drop')});
+  tip('tt4',s,(ev,b)=>{const px=(ev.clientX-b.left)/b.width*W;
+    const i=cnt.findIndex((_,k)=>px>=x(ed[k])&&px<x(ed[k+1]));
+    return i<0?null:'error '+ed[i].toFixed(4)+' – '+ed[i+1].toFixed(4)+'\n'+cnt[i]+' of 300 orderings';});
+}
+
+function tables(){
+  const dt=document.getElementById('dimtbl');
+  D.dim.forEach(g=>{
+    const g2=g.pts[1], g10=g.pts[9];
+    dt.insertAdjacentHTML('beforeend','<tr><td>'+g.rho.toFixed(2)+'</td><td class="keep">'+
+      ((1-g.floor)*100).toFixed(1)+'%</td><td>'+g.neff_max.toFixed(2)+'</td><td>'+
+      ((1-g2.rel)*100).toFixed(1)+'%</td><td>'+((1-g10.rel)*100).toFixed(1)+'%</td></tr>');});
+  const ft=document.getElementById('firsttbl');
+  D.order.first.forEach(f=>ft.insertAdjacentHTML('beforeend','<tr><td>'+P(f.first)+
+    '</td><td class="'+(f.mean<7.11?'keep':'drop')+'">'+f.mean.toFixed(4)+'</td><td>'+f.n+'</td></tr>'));
+}
+function rail(){
+  const r=document.getElementById('rail'); if(!r) return; r.innerHTML='';
+  const L={s1:'the test',s2:'worked example',s3:'why not average',s4:'is 5 folds enough',
+           s5:'optimism',s6:'order dependence',s7:'other failures',s8:'verdict'};
+  const top=r.getBoundingClientRect().top+scrollY;
+  Object.keys(L).forEach(id=>{const n=document.getElementById(id); if(!n)return;
+    const d=document.createElement('div'); d.className='rl';
+    d.style.top=(n.getBoundingClientRect().top+scrollY-top+46)+'px';
+    d.textContent=L[id]; r.appendChild(d);});
+}
+function draw(){fig1();fig2();fig3();fig4();}
+tables(); draw(); rail();
+addEventListener('resize',rail);
+matchMedia('(prefers-color-scheme:dark)').addEventListener('change',draw);
+new MutationObserver(draw).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+</script>
+
+</body>
+</html>
