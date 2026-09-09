@@ -1,0 +1,49 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Competition work</title>
+<style>
+:root{--bg:#fbfaf7;--ink:#17140f;--muted:#5e574c;--rule:#e2ddd4;--accent:#a8541b}
+@media(prefers-color-scheme:dark){:root{--bg:#100e0c;--ink:#ede7de;--muted:#a79c8d;--rule:#2e2823;--accent:#e0904f}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.62 Charter,Georgia,serif;-webkit-font-smoothing:antialiased}
+#repobar{position:sticky;top:0;z-index:99;display:flex;justify-content:space-between;align-items:center;gap:1rem;
+ padding:.5rem 1rem;font:12px/1.4 ui-monospace,Menlo,monospace;background:#16201f;color:#c9d3d0;border-bottom:1px solid #0b100f}
+#repobar a{color:#7fd3c4;text-decoration:none;font-weight:600}#repobar a:hover{text-decoration:underline}#repobar span{opacity:.65}
+.w{max-width:44rem;margin:0 auto;padding:3.4rem 1.5rem 6rem}
+h1{font:650 1.9rem/1.15 system-ui,sans-serif;letter-spacing:-.02em;margin:0 0 .4rem}
+p.sub{color:var(--muted);margin:0 0 1.6rem;max-width:60ch}
+h2{font:650 .72rem/1 ui-monospace,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);
+   margin:2.6rem 0 .9rem;padding-bottom:.5rem;border-bottom:1px solid var(--rule)}
+a{color:inherit}
+ul{list-style:none;padding:0;margin:0}
+li{padding:.9rem 0;border-bottom:1px solid var(--rule)}
+li b{font-weight:650;font-size:1.05rem}
+li .result{float:right;font:12px ui-monospace,Menlo,monospace;color:var(--accent);padding-top:.2rem}
+li span{display:block;color:var(--muted);font-size:.92rem;margin-top:.15rem}
+footer{margin-top:3rem;color:var(--muted);font:.85rem ui-monospace,monospace;line-height:1.8}
+</style></head><body>
+<div id="repobar"><a href="https://github.com/monim343/ml-competition-work">&#8592; source on GitHub</a><span>monim343 / ml-competition-work</span></div>
+<div class="w">
+<h1>Competition work</h1>
+<p class="sub">Kaggle competition entries, one folder each. Each folder contains the solution
+as it was actually submitted, the reasoning behind it, and an honest account of what did not work.</p>
+
+<h2>Competitions</h2>
+<ul>
+<li><span class="result">65th / 6,125 &middot; silver</span>
+<a href="rogii-wellbore-geology/index.html"><b>ROGII — Wellbore Geology Prediction</b></a>
+<span>Predict where a horizontal well sits inside rock layers, from a gamma-ray log and one vertical
+reference log. Sequence alignment under heavy ambiguity.</span></li>
+
+<li><span class="result">98th / 4,186 &middot; silver</span>
+<a href="ai-agent-security/index.html"><b>AI Agent Security — Multi-Step Tool Attacks</b></a>
+<span>Red-team a tool-using LLM agent into unsafe actions past a safety guardrail. Scored on a hidden,
+held-out guardrail — so the public leaderboard is a decoy, and the private reveal decides the result.</span></li>
+</ul>
+
+<footer>
+These pages are rendered from the same sources as the Markdown in the repository.<br>
+Source, submitted kernels, weights and validation scripts:
+<a href="https://github.com/monim343/ml-competition-work">github.com/monim343/ml-competition-work</a>
+</footer>
+</div></body></html>
