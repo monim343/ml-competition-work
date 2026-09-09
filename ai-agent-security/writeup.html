@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Score That Counted Was Hidden</title>
+<style>
+  :root{
+    --ground:#FAF8F5; --panel:#FFFFFF; --panel2:#F3EFE9;
+    --ink:#17140F; --muted:#5E574C; --faint:#918878;
+    --rule:#DFD8CC; --rule2:#EDE8E0;
+    --accent:#A8541B; --accent-soft:#F6E9DE;
+    --deep:#1F4E52; --deep-soft:#E2EFEF;
+    --good:#2F6B3D; --good-soft:#E4F0E5;
+    --bad:#9C2C22; --bad-soft:#FAE7E4;
+    --sans:"Helvetica Neue",Helvetica,Arial,system-ui,sans-serif;
+    --serif:Charter,Georgia,"Iowan Old Style",serif;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --ground:#100E0C; --panel:#191614; --panel2:#221E1A;
+      --ink:#EDE7DE; --muted:#A79C8D; --faint:#7A7062;
+      --rule:#2E2823; --rule2:#221E1A;
+      --accent:#E0904F; --accent-soft:#2B1B0F;
+      --deep:#6FBDBF; --deep-soft:#12292A;
+      --good:#79C98A; --good-soft:#152917;
+      --bad:#E58579; --bad-soft:#2C1512;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#100E0C; --panel:#191614; --panel2:#221E1A;
+    --ink:#EDE7DE; --muted:#A79C8D; --faint:#7A7062;
+    --rule:#2E2823; --rule2:#221E1A;
+    --accent:#E0904F; --accent-soft:#2B1B0F;
+    --deep:#6FBDBF; --deep-soft:#12292A;
+    --good:#79C98A; --good-soft:#152917;
+    --bad:#E58579; --bad-soft:#2C1512;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--ground);color:var(--ink);
+       font-family:var(--serif);font-size:16.5px;line-height:1.62;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:820px;margin:0 auto;padding:44px 22px 88px}
+
+  header{border-bottom:3px solid var(--accent);padding-bottom:20px;margin-bottom:8px}
+  .kicker{font-family:var(--mono);font-size:10.5px;letter-spacing:.17em;text-transform:uppercase;
+          color:var(--accent);margin:0 0 12px}
+  h1{font-family:var(--sans);font-size:32px;line-height:1.08;letter-spacing:-.024em;font-weight:750;
+     margin:0 0 12px;text-wrap:balance}
+  .dek{color:var(--muted);font-size:16.5px;margin:0;max-width:64ch}
+  .stamp{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:16px;
+         display:flex;gap:16px;flex-wrap:wrap}
+  .stamp b{color:var(--ink);font-weight:600}
+
+  h2{font-family:var(--sans);font-size:12px;letter-spacing:.15em;text-transform:uppercase;font-weight:750;
+     color:var(--accent);margin:46px 0 6px;padding-bottom:8px;border-bottom:1px solid var(--rule)}
+  p{margin:14px 0}
+  strong{font-weight:650}
+  em{color:var(--muted)}
+  a{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--rule)}
+  a:hover{border-color:var(--accent)}
+  code{font-family:var(--mono);font-size:.86em;background:var(--panel2);
+       padding:.06em .34em;border-radius:4px}
+
+  .lede{font-size:18px;line-height:1.55;color:var(--ink);margin:22px 0}
+  .lede b{color:var(--accent)}
+
+  /* hero result table */
+  table{border-collapse:collapse;width:100%;margin:22px 0;font-size:14.5px}
+  .result{background:var(--panel);border:1px solid var(--rule);border-radius:10px;overflow:hidden}
+  .result th,.result td{padding:12px 16px;text-align:center;border-bottom:1px solid var(--rule2)}
+  .result thead th{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+       color:var(--faint);font-weight:600;background:var(--panel2)}
+  .result tbody th{text-align:left;font-family:var(--sans);font-weight:600;font-size:14px;color:var(--muted)}
+  .result tr:last-child td,.result tr:last-child th{border-bottom:none}
+  .num{font-family:var(--mono);font-weight:600;font-size:16px}
+  .win{color:var(--good);background:var(--good-soft)}
+  .loss{color:var(--bad);background:var(--bad-soft)}
+  .sel td,.sel th{background:var(--accent-soft)}
+  .sel .num{color:var(--accent)}
+
+  /* evidence table */
+  .evi th,.evi td{padding:10px 14px;border-bottom:1px solid var(--rule2)}
+  .evi thead th{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+       color:var(--faint);text-align:center}
+  .evi tbody th{text-align:left;font-weight:600;font-size:14px}
+  .evi td{text-align:center;font-family:var(--mono)}
+  .evi .verdict{font-family:var(--sans);font-size:12.5px;font-weight:600}
+
+  ul{margin:14px 0;padding-left:0;list-style:none}
+  ul li{position:relative;padding-left:20px;margin:12px 0}
+  ul li::before{content:"";position:absolute;left:2px;top:.62em;width:6px;height:6px;
+       background:var(--accent);border-radius:50%}
+  ul li b{font-weight:650}
+
+  .foot{margin-top:52px;padding-top:18px;border-top:1px solid var(--rule);
+        font-family:var(--mono);font-size:11.5px;color:var(--faint);line-height:1.7}
+  .note{font-size:13.5px;color:var(--muted);background:var(--panel2);border-left:3px solid var(--rule);
+        padding:12px 16px;border-radius:0 6px 6px 0;margin:20px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="kicker">Kaggle · AI Agent Security — Multi-Step Tool Attacks</p>
+  <h1>The score that counted was hidden</h1>
+  <p class="dek">The attack that topped the public board scored <em>zero</em> on the hidden final one.
+     I expected the transfer, selected the one attack that survives, and moved from 576th to 98th on the reveal.</p>
+  <p class="stamp">
+    <span>FINAL&nbsp;<b>98 / 4,186</b>&nbsp;·&nbsp;top 2.4%</span>
+    <span>PUBLIC&nbsp;<b>576th</b></span>
+    <span>OpenAI · Featured Code Competition</span>
+  </p>
+</header>
+
+<div class="note">Context — an authorized, organizer-run red-team benchmark whose purpose is to
+<b>harden</b> the guardrails of tool-using LLM agents. Everything ran against the competition's offline
+fixtures with fake credentials: no real systems, accounts, or data. The “attacks” are benchmark inputs
+whose only effect is a score.</div>
+
+<table class="result">
+  <thead><tr><th>Submission</th><th>Public score</th><th>Private score (final)</th></tr></thead>
+  <tbody>
+    <tr><th>Public-optimal attack</th>
+        <td class="num">89.82</td><td class="num loss">0.00</td></tr>
+    <tr class="sel"><th>Selected attack</th>
+        <td class="num">22.56</td><td class="num win">22.50</td></tr>
+  </tbody>
+</table>
+
+<p class="lede">That contrast is the result. My best public submission scored <b>four times higher</b>
+— and was worth nothing where it counted. This write-up is about why, and what I selected instead.</p>
+
+<h2>The setup</h2>
+<p>The task: write an algorithm that drives a tool-using LLM agent (two models, <code>gpt-oss</code> and
+<code>gemma</code>) into an unsafe action — exfiltrate a secret, send an email without permission — while
+a <strong>guardrail</strong>, a safety filter that inspects each tool call and allows or denies it, tries
+to stop it. Scoring is a throughput race: the more distinct actions slip past the guardrail, the higher
+the score.</p>
+<p>The catch that defined everything: <strong>you are scored on two different guardrails.</strong> The
+public leaderboard uses one you can inspect; your final rank is decided by a <strong>held-out private
+guardrail you never see.</strong> The organizers explicitly warned that the public exploit “may not
+transfer.” The public board therefore rewarded the very attack that would fail on the private.</p>
+
+<h2>The key call</h2>
+<p>The public guardrail has a precise blind spot: for a web request it checks the <strong>destination,
+not the payload</strong>. So the top public attack is trivial — post a marker string to thousands of
+throwaway URLs. That is the 89.82, and the top of the public board was built on it.</p>
+<p>Reading the shipped SDK made the problem explicit. The marker the scorer <em>requires</em> literally
+contains the word <code>secret</code> — a flagged pattern. So <strong>any private guardrail that also
+inspects the payload denies the entire public-optimal attack and scores it zero</strong> — and the
+evidence (a leaked config name, timing signals) pointed to exactly that. There is no wording around it:
+the scorer demands the exact string that gets it blocked. <em>The reveal confirmed it: 0.00.</em></p>
+<p>One primitive survives that: the <strong>confused deputy</strong> — getting the agent to send a benign
+notification email it was never asked to send. It carries no dangerous pattern, so a stricter guardrail
+has nothing to catch. It is the lowest-value action in the game, but the one that still fires when the
+valuable ones are blocked. <strong>I committed the private score to the deputy, not the exfiltration.</strong></p>
+
+<h2>What I did</h2>
+<ul>
+  <li><b>Recovered the rules from source.</b> I read the competition SDK for the exact scoring formula,
+     the four scored predicates and their severities, and the harness's hard limits — it replays at most
+     2,000 candidates and cuts each phase off at a wall-clock deadline. Every choice below follows from
+     those facts, not from probing the public board.</li>
+  <li><b>Built a diversified portfolio.</b> Since the private guardrail was unobservable, I didn't
+     optimize for one guess — I submitted a spread of deputy variants covering its plausible forms
+     (recipient domains lifted from the fixtures, a broad spread, a diverse fallback), so something would
+     score whatever it turned out to be.</li>
+  <li><b>Removed a self-inflicted 30% loss.</b> My first version probed latency to size its output and,
+     on a cold start, under-filled the budget. Since the harness truncates on time anyway, I switched to
+     emitting the hard cap unconditionally — recovering ~30% throughput (confirmed +30–39% on the board).</li>
+  <li><b>A throughput gain worth +36%.</b> Appending the model's own chat-template control tokens
+     suppressed its chain-of-thought, so it emitted the action sooner and more candidates fit in the time
+     budget. On the deputy this lifted 16.5 → 22.6 — the single change that decided which submission I chose.</li>
+</ul>
+
+<h2>The evidence</h2>
+<p>When the private scores were revealed, the transfer split exactly as reasoned:</p>
+<table class="evi">
+  <thead><tr><th>Submission</th><th>Public</th><th>Private</th><th>Verdict</th></tr></thead>
+  <tbody>
+    <tr><th>Pure exfiltration (<code>SECRET_MARKER</code>)</th>
+        <td>~88</td><td class="loss">0.0</td><td class="verdict" style="color:var(--bad)">blocked, as predicted</td></tr>
+    <tr><th>Exfiltration-heavy mix</th>
+        <td>28.4</td><td>5.9</td><td class="verdict" style="color:var(--muted)">mostly collapsed</td></tr>
+    <tr><th>Deputy, throughput-tuned</th>
+        <td>22.6</td><td class="win">22.5</td><td class="verdict" style="color:var(--good)">held</td></tr>
+  </tbody>
+</table>
+<p>The public-optimal attack lost 100% of its score; the deputy lost essentially none. Selecting it
+moved a public standing of 576th to a final rank of <strong>98th</strong>.</p>
+
+<h2>Takeaways</h2>
+<ul>
+  <li><b>Read the scorer.</b> The whole solution came from the shipped source — the scoring formula, the
+     guardrail's blind spot, the harness's limits — not from probing the public board.</li>
+  <li><b>Optimize the score that counts, not the one you can see.</b> With a held-out evaluator the public
+     leaderboard is a decoy; the discipline was to stay with the deputy while my own public-optimal
+     attack looked four times higher.</li>
+  <li><b>Hedge under uncertainty.</b> I couldn't know the private guardrail, so I spread across its
+     plausible forms rather than committing to one — and let the reveal select the winner.</li>
+</ul>
+
+<h2>The solution</h2>
+<p>The technical reference — the scoring formula recovered from the SDK, the four predicates and their
+severities, the guardrail's blind spot, the attack engine, and the exact selected configuration — and
+the attack code are in the repository:
+<a href="https://github.com/monim343/ml-competition-work/blob/main/ai-agent-security/solution-reference.md">solution-reference.md</a>
+and <a href="https://github.com/monim343/ml-competition-work/tree/main/ai-agent-security/solution">solution/</a>.</p>
+
+<div class="foot">
+  AI Agent Security — Multi-Step Tool Attacks · OpenAI · Featured Code Competition · 4,186 teams<br>
+  Final: 98th · private score 22.50 · public 89.82 (576th)
+</div>
+
+</div>
+</body>
+</html>
