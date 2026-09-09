@@ -1,0 +1,68 @@
+{
+  "members": [
+    "cat_d6",
+    "cat_mae",
+    "cat_d8",
+    "lgb_main",
+    "xgb_hist",
+    "ridge",
+    "lgb_huber",
+    "lgb_goss",
+    "sgd_huber",
+    "hgb",
+    "et_sub"
+  ],
+  "w_agp11": [
+    0.09885018044856492,
+    0.11241196025649541,
+    0.10239433071745435,
+    0.09730862630204726,
+    0.07789392643008783,
+    0.08387420578909803,
+    0.09206315114647345,
+    0.06307514968888739,
+    0.10663260714881537,
+    0.08446930143711125,
+    0.0810265606349647
+  ],
+  "alpha": 0.45,
+  "alpha_rule": "raw = (1-alpha)*(base128 + M@w_agp11) + alpha*pool_top3; alpha argmin pooled row RMSE on md5-half-A, frozen B read",
+  "frozenB": {
+    "agp11_pooled": 9.465061695729041,
+    "agp11_pwm": 7.35737682245462,
+    "blend_pooled": 8.815787208038138,
+    "blend_pwm": 7.0308573703181425,
+    "nnls12_pooled": 8.46025662858042,
+    "nnls12_pwm": 6.854546909794528
+  },
+  "w_nnls12": [
+    0.4803116288273555,
+    0.35162324975090636,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.4784606665747631,
+    0.0,
+    0.0,
+    0.6186231820295522
+  ],
+  "nnls12_members": [
+    "cat_d6",
+    "cat_mae",
+    "cat_d8",
+    "lgb_main",
+    "xgb_hist",
+    "ridge",
+    "lgb_huber",
+    "lgb_goss",
+    "sgd_huber",
+    "hgb",
+    "et_sub",
+    "pool_res"
+  ],
+  "fit_rows": 1039534,
+  "fit_wells": 218
+}

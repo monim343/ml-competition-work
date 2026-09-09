@@ -1,0 +1,28 @@
+{
+  "id": "mooniim/chassis-v36d-capgamble",
+  "title": "chassis-v36d-capgamble",
+  "code_file": "chassis-v36d-capgamble.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": true,
+  "enable_gpu": false,
+  "enable_tpu": false,
+  "enable_internet": false,
+  "keywords": [],
+  "dataset_sources": [
+    "mooniim/chassis-config",
+    "mooniim/chassis-modules",
+    "mooniim/mixpf-model",
+    "mooniim/mixpf-reranker",
+    "mooniim/warp-newfeats-weights",
+    "mooniim/warplookup-weights",
+    "mooniim/warplookup-module",
+    "mooniim/maek-ms-model",
+    "mooniim/warpdrop-weights",
+    "mooniim/warp-direct-weights"
+  ],
+  "kernel_sources": [],
+  "competition_sources": [
+    "rogii-wellbore-geology-prediction"
+  ]
+}
